@@ -329,4 +329,14 @@ public class GridSystem : MonoBehaviour
     }
 
     public Grid IsometricGrid => isometricGrid;
+
+    // =========================================================================
+    // PUBLIC ACCESSORS — For PathfindingGrid
+    // =========================================================================
+
+    /// <summary>Public accessor cho PathfindingGrid.</summary>
+    public Vector2Int ShopMinCell => shopMinCell;
+
+    /// <summary>Public accessor cho PathfindingGrid.</summary>
+    public Vector2Int ShopMaxCell => shopMaxCell;
 }

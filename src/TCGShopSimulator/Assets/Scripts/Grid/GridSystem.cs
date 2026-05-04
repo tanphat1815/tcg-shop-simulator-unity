@@ -114,14 +114,33 @@ public class GridSystem : MonoBehaviour
     public Vector3 CellToWorld(Vector2Int cellCoord)
     {
         Vector3Int cell3D = new Vector3Int(cellCoord.x, cellCoord.y, 0);
-        Vector3 bottomLeft = isometricGrid.CellToWorld(cell3D);
-        return bottomLeft + isometricGrid.cellSize * 0.5f;
+        return isometricGrid.CellToWorld(cell3D);
     }
 
     public Vector3 SnapToGrid(Vector3 worldPosition)
     {
         Vector2Int cell = WorldToCell(worldPosition);
         return CellToWorld(cell);
+    }
+
+    /// <summary>
+    /// Tinh vi tri trung binh (tam) cua mot nhom cac o (footprint).
+    /// Giup cac vat the lon (2x1, 2x2) duoc dat dung giua cac o Isometric.
+    /// </summary>
+    public Vector3 GetCenteredWorldPosition(Vector2Int originCell, FurnitureDefinition definition, int rotationDegrees)
+    {
+        if (definition == null) return CellToWorld(originCell);
+
+        List<Vector2Int> footprint = definition.GetFootprintCells(rotationDegrees);
+        if (footprint.Count <= 1) return CellToWorld(originCell);
+
+        Vector3 averagePos = Vector3.zero;
+        foreach (var relativeCell in footprint)
+        {
+            Vector2Int absoluteCell = originCell + relativeCell;
+            averagePos += CellToWorld(absoluteCell);
+        }
+        return averagePos / footprint.Count;
     }
 
     // =========================================================================

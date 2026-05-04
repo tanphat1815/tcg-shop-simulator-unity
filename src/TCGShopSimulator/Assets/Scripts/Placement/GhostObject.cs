@@ -128,19 +128,8 @@ public class GhostObject : MonoBehaviour
     // PRIVATE HELPERS
     private Vector3 AdjustForFootprintCenter(Vector3 originWorldPos)
     {
-        if (_definition == null) return originWorldPos;
-
-        var (minBounds, maxBounds) = _definition.GetFootprintBounds(_currentRotation);
-
-        float centerOffsetX = (minBounds.x + maxBounds.x) * 0.5f;
-        float centerOffsetY = (minBounds.y + maxBounds.y) * 0.5f;
-
-        Vector3 cellSize = GridSystem.Instance.IsometricGrid.cellSize;
-        return originWorldPos - new Vector3(
-            centerOffsetX * cellSize.x,
-            centerOffsetY * cellSize.y,
-            0f
-        );
+        if (_definition == null || GridSystem.Instance == null) return originWorldPos;
+        return GridSystem.Instance.GetCenteredWorldPosition(_currentCellPosition, _definition, _currentRotation);
     }
 
     private void ApplyColor(Color color)

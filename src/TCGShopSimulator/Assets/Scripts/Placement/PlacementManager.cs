@@ -106,26 +106,35 @@ public class PlacementManager : MonoBehaviour
     // STATE HANDLERS
     private void HandlePlacingState()
     {
-        if (_activeGhost == null || _mouse == null) return;
+        if (_activeGhost == null) return;
+
+        // --- INPUT CHECKS (Processed every frame) ---
+
+        // Rotate
+        if (_keyboard != null && _keyboard.rKey.wasPressedThisFrame)
+            HandleRotation();
+
+        // Cancel
+        if ((_mouse != null && _mouse.rightButton.wasPressedThisFrame) ||
+            (_keyboard != null && _keyboard.escapeKey.wasPressedThisFrame))
+        {
+            CancelPlacement();
+            return;
+        }
+
+        // --- WORLD POSITION / PREVIEW ---
+        if (_mouse == null) return;
 
         Vector3 mouseWorldPosition = GetMouseWorldPosition();
         if (mouseWorldPosition == Vector3.negativeInfinity) return;
 
         _activeGhost.UpdatePreview(mouseWorldPosition);
 
-        if (_keyboard != null && _keyboard.rKey.wasPressedThisFrame)
-            HandleRotation();
-
+        // Confirm
         if (_mouse.leftButton.wasPressedThisFrame)
         {
             if (Time.time - _lastPlacementTime >= placementCooldown)
                 TryConfirmPlacement();
-        }
-
-        if (_mouse.rightButton.wasPressedThisFrame ||
-            (_keyboard != null && _keyboard.escapeKey.wasPressedThisFrame))
-        {
-            CancelPlacement();
         }
     }
 
@@ -196,13 +205,13 @@ public class PlacementManager : MonoBehaviour
     private void ConfirmPlacement(Vector2Int targetCell, int rotation)
     {
         string instanceId = GenerateInstanceId(_activeFurnitureDefinition.furnitureType);
-        Vector3 worldPosition = GridSystem.Instance.CellToWorld(targetCell);
+        Vector3 worldPosition = GridSystem.Instance.GetCenteredWorldPosition(targetCell, _activeFurnitureDefinition, rotation);
 
         Transform parent = furnitureParent != null ? furnitureParent : transform;
         GameObject furnitureGO = Instantiate(
             _activeFurnitureDefinition.furniturePrefab,
             worldPosition,
-            Quaternion.identity,
+            Quaternion.Euler(0, 0, rotation),
             parent
         );
 
@@ -248,9 +257,11 @@ public class PlacementManager : MonoBehaviour
 
         _activeGhost.Rotate();
 
-        Debug.Log($"[PlacementManager] Rotated to {_activeGhost.CurrentRotation} deg. " +
-                  $"New footprint: " +
-                  $"{_activeFurnitureDefinition.GetFootprintCells(_activeGhost.CurrentRotation).Count} cells.");
+        if (verboseLogging)
+        {
+            Debug.Log($"[PlacementManager] Rotated ghost to {_activeGhost.CurrentRotation} deg. " +
+                      $"New footprint cells: {_activeFurnitureDefinition.GetFootprintCells(_activeGhost.CurrentRotation).Count}");
+        }
     }
 
     // GHOST MANAGEMENT
@@ -302,9 +313,12 @@ public class PlacementManager : MonoBehaviour
         Vector2 screenPos = _mouse.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(screenPos);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundLayerMask))
-            return hit.point;
+        // Try 2D Raycast first (since we use Box Collider 2D)
+        RaycastHit2D hit2D = Physics2D.GetRayIntersection(ray, 100f, groundLayerMask);
+        if (hit2D.collider != null)
+            return hit2D.point;
 
+        // Fallback: Math plane intersection (Z=0)
         if (Mathf.Abs(ray.direction.z) > 0.001f)
         {
             float t = -ray.origin.z / ray.direction.z;

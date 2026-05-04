@@ -20,7 +20,7 @@ MonoBehaviour:
   menuIcon: {fileID: 0}
   footprintWidth: 1
   footprintHeight: 1
-  canRotate: 0
+  canRotate: 1
   buyCost: 150
   requiredShopLevel: 1
   numberOfTiers: 3

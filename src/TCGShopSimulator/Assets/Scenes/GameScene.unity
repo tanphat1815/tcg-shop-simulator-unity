@@ -600,6 +600,7 @@ GameObject:
   - component: {fileID: 900000202}
   - component: {fileID: 900000203}
   - component: {fileID: 900000204}
+  - component: {fileID: 900000205}
   m_Layer: 0
   m_Name: _PlacementManager
   m_TagString: Untagged
@@ -672,6 +673,20 @@ MonoBehaviour:
   m_DefaultActionMap: 
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &900000205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d4ef1da6fafc7b47a60f646854724c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlacementDebugTester
+  cashierDesk: {fileID: 11400000, guid: e457e4d8729e3a246a408739fb0515cf, type: 2}
+  shelfDouble: {fileID: 11400000, guid: 50946fa8776f53245a5a7e20af36112a, type: 2}
 --- !u!1 &900000301
 GameObject:
   m_ObjectHideFlags: 0

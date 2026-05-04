@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 247d1464800ebee4580d71521a4061a1, type: 3}
+  m_Name: Card_Bulbasaur
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardId: sv01-004
+  cardName: Bulbasaur
+  setId: sv01
+  seriesId: sv
+  cardNumber: 004
+  cardSprite: {fileID: 0}
+  cardBackSprite: {fileID: 0}
+  rarity: {fileID: 11400000, guid: 6e7de2235e267f24c9236f500f637814, type: 2}
+  baseHp: 70
+  cardTypes: 
+  retreatCost: 1
+  attacks: []
+  weaknesses: []
+  resistances: []
+  marketValue: 0.1
+  artistName: 

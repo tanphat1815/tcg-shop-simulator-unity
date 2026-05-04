@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1270bb073f33d14283cc22c77ba8ec9, type: 3}
+  m_Name: Pack_SV01_BaseSet
+  m_EditorClassIdentifier: Assembly-CSharp::PackData
+  packId: pack_sv01
+  packName: Scarlet & Violet Base Set Booster Pack
+  sourceSetId: sv01
+  generationName: GENERATION IX
+  packFrontSprite: {fileID: 0}
+  packBackSprite: {fileID: 0}
+  buyCost: 4.99
+  defaultSellPrice: 7.99
+  requiredShopLevel: 1
+  availableCards:
+  - {fileID: 11400000, guid: a6819cda26df5d245860f56624225d14, type: 2}
+  - {fileID: 11400000, guid: 3188c919d1ba0054fb42bf4a94554216, type: 2}
+  - {fileID: 11400000, guid: aa52ff05a183ce24c935c391b8708ec1, type: 2}
+  - {fileID: 11400000, guid: 43976820c4811f042abdb98dd9b0b1be, type: 2}
+  - {fileID: 11400000, guid: a4b7c79dba2bb3841b038c67d244fc5e, type: 2}
+  cardsPerPack: 6
+  dropTable:
+  - slotLabel: Slot 1 (Common Guaranteed)
+    rarityWeights:
+    - rarity: {fileID: 11400000, guid: 6e7de2235e267f24c9236f500f637814, type: 2}
+      weight: 100
+  - slotLabel: Slot 2 (Common Guaranteed)
+    rarityWeights:
+    - rarity: {fileID: 11400000, guid: 6e7de2235e267f24c9236f500f637814, type: 2}
+      weight: 100
+  - slotLabel: Slot 3 (Common Guaranteed)
+    rarityWeights:
+    - rarity: {fileID: 11400000, guid: 6e7de2235e267f24c9236f500f637814, type: 2}
+      weight: 100
+  - slotLabel: Slot 4 (Common/Uncommon)
+    rarityWeights:
+    - rarity: {fileID: 11400000, guid: 6e7de2235e267f24c9236f500f637814, type: 2}
+      weight: 70
+    - rarity: {fileID: 11400000, guid: 960797461bf7fb242bd38f924eaedc1c, type: 2}
+      weight: 30
+  - slotLabel: Slot 5 (Uncommon/Rare Mix)
+    rarityWeights:
+    - rarity: {fileID: 11400000, guid: 6e7de2235e267f24c9236f500f637814, type: 2}
+      weight: 30
+    - rarity: {fileID: 11400000, guid: 960797461bf7fb242bd38f924eaedc1c, type: 2}
+      weight: 55
+    - rarity: {fileID: 11400000, guid: d4bbf3cd8874b7b44b9013616db4f389, type: 2}
+      weight: 15
+  - slotLabel: "Slot 6 (Rare Guaranteed \u2605)"
+    rarityWeights:
+    - rarity: {fileID: 11400000, guid: d4bbf3cd8874b7b44b9013616db4f389, type: 2}
+      weight: 70
+    - rarity: {fileID: 11400000, guid: fb2e854f5228aae4b8d61f150c2bde38, type: 2}
+      weight: 20
+    - rarity: {fileID: 11400000, guid: 41bed1e2edcfb494782806b27bef00c1, type: 2}
+      weight: 10

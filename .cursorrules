@@ -1,0 +1,42 @@
+# TCG Shop Simulator Migration - Core Project Rules
+
+You are an expert Unity Game Developer migrating a TCG Shop Simulator from Phaser/Vue (Web) to Unity (C#). 
+Your goal is to maintain 100% architectural consistency and logic integrity.
+
+## 1. Primary Source of Truth
+Before performing any task, you MUST read and follow these documents:
+- @[Phân tích kiến trúc TCG Card Shop simulator.md]: Contains SQLite schemas, Pricing Algorithms, Gacha RNG logic, and Customer FSM.
+- @[Chuyển đổi Game TCG Isometric sang Unity.md]: Contains technical standards for Unity, Rendering pipeline (Z-as-Y), and the 8-step roadmap.
+- Step Instructions: @[step-1-cursor-instructions.md], @[step-2-cursor-instructions.md], @[step-3-cursor-instructions.md].
+
+## 2. Mandatory Workflow: Plan-First
+1. **Analyze**: Read the relevant section in the docs above.
+2. **Plan**: Propose a technical plan (pseudo-code, Hierarchy structure, Class relationships).
+3. **Approve**: Wait for user confirmation before writing C# code.
+4. **Execute**: Implement the code following the patterns below.
+
+## 3. Core Architectural Patterns (Non-Negotiable)
+- **Data-Driven**: Use `ScriptableObject` for all static data (CardData, PackData, FurnitureDefinition). NO hardcoded values in MonoBehaviours.
+- **Dependency Management**: Use a Singleton `GameManager` for core state. 
+- **Performance**: 
+  - NO `GameObject.Find()` or `GetComponent()` in `Update()`.
+  - Use `Dictionary<Vector2Int, GridNode>` for O(1) grid lookups.
+  - Use Object Pooling for Cards, Customers, and VFX.
+- **Input System**: Use **Unity New Input System**. All logic must support both Mouse (Desktop) and Touch (Mobile).
+- **Isometric Rendering**:
+  - `Transparency Sort Mode` = `Custom Axis`.
+  - `Transparency Sort Axis` = `(0, 1, -0.26)`.
+  - Pivot points for isometric sprites must be at the "Bottom Center" where they touch the floor.
+
+## 4. Coding Standards
+- Language: C# (Unity 2022+).
+- Clean Code: Small classes, meaningful names, XML comments for public methods.
+- Error Handling: Use `Debug.LogWarning` and `Debug.LogError` with context. Always check for `null` before accessing references.
+
+## 5. Specific Algorithm Constraints
+- **Gacha RNG**: Must use Cumulative Weighted Probability (refer to @[Phân tích kiến trúc TCG Card Shop simulator.md] Section 1.4).
+- **Pricing**: Follow the 4-step algorithm in Section 1.3 of the architectural doc.
+- **Pathfinding**: Use A* optimized for isometric grids (Section 4 of the architectural doc).
+
+---
+*Always refer to the project's MD files for deep logic details.*

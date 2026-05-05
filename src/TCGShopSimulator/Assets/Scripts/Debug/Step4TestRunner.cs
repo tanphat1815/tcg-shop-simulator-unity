@@ -12,7 +12,7 @@ public class Step4TestRunner : MonoBehaviour
     [SerializeField] private CustomerFSM testNPC;
 
     [Header("Economic Engine Test")]
-    [SerializeField] private float testSellPrice   = 30f;
+    [Tooltip("Giá thị trường tham chiếu cho test. sellPrice test = 30f (×3), 10f (=market).")]
     [SerializeField] private float testMarketPrice = 10f;
 
     [Header("Shelf Instance Test")]

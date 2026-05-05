@@ -69,7 +69,7 @@ public class CustomerSpawner : MonoBehaviour
     {
         if (!_shopIsOpen) return;
 
-        int currentCount = FindObjectsByType<CustomerFSM>(FindObjectsSortMode.None).Length;
+        int currentCount = FindObjectsByType<CustomerFSM>().Length;
         if (currentCount >= _maxCustomers) return;
 
         SpawnCustomer();
@@ -108,7 +108,7 @@ public class CustomerSpawner : MonoBehaviour
         if (_verboseLogging)
         {
             Debug.Log($"[CustomerSpawner] Spawned {instanceId} with intent={intent}. " +
-                      $"Total active: {FindObjectsByType<CustomerFSM>(FindObjectsSortMode.None).Length}");
+                      $"Total active: {FindObjectsByType<CustomerFSM>().Length}");
         }
     }
 

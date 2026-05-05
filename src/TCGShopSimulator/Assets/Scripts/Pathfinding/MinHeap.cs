@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// Binary Min-Heap tổng quát dùng cho A* Open List.

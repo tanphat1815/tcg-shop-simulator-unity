@@ -133,7 +133,7 @@ public class ShopFloorManager : MonoBehaviour
         foreach (var shelf in _shelvesWithStock)
         {
             if (shelf == null || !shelf.HasStock) continue;
-            if (checkedShelfIds.Contains(shelf.GetInstanceID().ToString())) continue;
+            if (checkedShelfIds.Contains(shelf.GetEntityId().ToString())) continue;
 
             float distSq = (shelf.WorldPosition - npcWorldPosition).sqrMagnitude;
             if (distSq < nearestDistSq)

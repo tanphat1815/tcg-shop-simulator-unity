@@ -297,7 +297,7 @@ public class CustomerFSM : MonoBehaviour
 
         if (!_targetShelf.HasStock)
         {
-            _checkedShelfIds.Add(_targetShelf.GetInstanceID().ToString());
+            _checkedShelfIds.Add(_targetShelf.GetEntityId().ToString());
             if (_verboseLogging)
                 Debug.Log($"[CustomerFSM] {InstanceId}: Shelf out of stock. Wandering.");
 
@@ -348,7 +348,7 @@ public class CustomerFSM : MonoBehaviour
             }
             else
             {
-                _checkedShelfIds.Add(_targetShelf.GetInstanceID().ToString());
+                _checkedShelfIds.Add(_targetShelf.GetEntityId().ToString());
                 TransitionToState(CustomerState.Wander);
                 MoveToRandomWanderPoint();
             }
@@ -359,7 +359,7 @@ public class CustomerFSM : MonoBehaviour
                 Debug.Log($"[CustomerFSM] {InstanceId}: REFUSED to buy. Reason: {decisionType}. Leaving shop.");
 
             if (_targetShelf != null)
-                _checkedShelfIds.Add(_targetShelf.GetInstanceID().ToString());
+                _checkedShelfIds.Add(_targetShelf.GetEntityId().ToString());
 
             _targetShelf = null;
 

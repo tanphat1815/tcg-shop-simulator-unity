@@ -53,10 +53,18 @@ public static class EconomicDecisionEngine
     /// <returns>Xác suất mua trong khoảng [0.0, 0.95].</returns>
     public static float CalculateBuyProbability(float sellPrice, float marketPrice)
     {
-        if (marketPrice <= 0f)
+        if (marketPrice < 0f)
         {
-            Debug.LogWarning("[EconomicDecisionEngine] marketPrice <= 0. Trả về 0 xác suất.");
+            Debug.LogWarning($"[EconomicDecisionEngine] marketPrice is negative ({marketPrice}). " +
+                            "Returning 0 probability. Check data integrity.");
             return 0f;
+        }
+
+        if (Mathf.Approximately(marketPrice, 0f))
+        {
+            Debug.LogWarning($"[EconomicDecisionEngine] marketPrice is 0. " +
+                            "Treating as free item — using BASE_BUY_PROBABILITY (95%).");
+            return BASE_BUY_PROBABILITY;
         }
 
         float priceRatio = sellPrice / marketPrice;

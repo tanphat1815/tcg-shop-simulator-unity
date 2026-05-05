@@ -79,7 +79,10 @@ public class MinHeap<T> where T : IComparable<T>, IHeapItem
     public T ExtractMin()
     {
         if (IsEmpty)
-            throw new InvalidOperationException("MinHeap is empty.");
+        {
+            Debug.LogError("[MinHeap] Attempted ExtractMin on an empty heap!");
+            return default;
+        }
 
         T min = _items[0];
         int lastIndex = _items.Count - 1;

@@ -106,20 +106,22 @@ public static class PathfindingCore
 
         if (startNode == null)
         {
-            Debug.LogWarning($"[PathfindingCore] Start cell {startCell} không tồn tại trong grid.");
+            Debug.LogError($"[PathfindingCore] Start cell {startCell} does not exist in the pathfinding grid. " +
+                          "Ensure the grid is initialized before requesting paths.");
             return null;
         }
 
         if (goalNode == null)
         {
-            Debug.LogWarning($"[PathfindingCore] Goal cell {goalCell} không tồn tại trong grid.");
+            Debug.LogError($"[PathfindingCore] Goal cell {goalCell} does not exist in the pathfinding grid. " +
+                          "Ensure the grid covers the target area.");
             return null;
         }
 
         if (!goalNode.IsWalkable)
         {
-            Debug.LogWarning($"[PathfindingCore] Goal cell {goalCell} không walkable " +
-                             "(bị kệ hàng chiếm). Không thể tìm đường đến đây.");
+            Debug.LogError($"[PathfindingCore] Goal cell {goalCell} is not walkable (obstacle or out of bounds). " +
+                          $"NPC cannot path to this location. Falling back to ExitShop state.");
             return null;
         }
 

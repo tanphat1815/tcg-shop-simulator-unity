@@ -120,20 +120,34 @@ public class CashierQueueManager : MonoBehaviour
     /// </summary>
     public void DequeueCustomer(CustomerFSM customer)
     {
-        int removedIndex = _queue.FindIndex(e => e.Customer == customer);
-        if (removedIndex < 0) return;
+        if (customer == null)
+        {
+            Debug.LogWarning("[CashierQueue] DequeueCustomer called with null customer. Ignoring.");
+            return;
+        }
 
+        int removedIndex = _queue.FindIndex(e => e.Customer == customer);
+        if (removedIndex < 0)
+        {
+            Debug.LogWarning($"[CashierQueue] Customer '{customer.InstanceId}' " +
+                            "was not found in the queue. Ignoring dequeue.");
+            return;
+        }
+
+        var removedCustomerRef = _queue[removedIndex].Customer;
         _queue.RemoveAt(removedIndex);
 
         for (int i = removedIndex; i < _queue.Count; i++)
         {
             _queue[i].SlotIndex = i;
-            _queue[i].Customer.UpdateQueuePosition(GetSlotWorldPosition(i));
+            if (_queue[i].Customer != null)
+                _queue[i].Customer.UpdateQueuePosition(GetSlotWorldPosition(i));
         }
 
         if (_verboseLogging)
         {
-            Debug.Log($"[CashierQueue] {customer.InstanceId} dequeued. Queue size: {_queue.Count}.");
+            Debug.Log($"[CashierQueue] {(removedCustomerRef != null ? removedCustomerRef.InstanceId : "Unknown")} " +
+                     $"dequeued. Queue size: {_queue.Count}.");
         }
     }
 

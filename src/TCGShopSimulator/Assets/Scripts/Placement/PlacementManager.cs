@@ -73,13 +73,15 @@ public class PlacementManager : MonoBehaviour
         Instance = this;
 
         if (mainCamera == null)
-            mainCamera = Camera.main;
-
-        if (mainCamera == null)
         {
-            Debug.LogError("[PlacementManager] mainCamera khong tim thay!");
-            enabled = false;
-            return;
+            mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                Debug.LogError("[PlacementManager] mainCamera is null! " +
+                              "Ensure a Camera with 'MainCamera' tag exists in the scene.");
+                enabled = false;
+                return;
+            }
         }
 
         _mouse = Mouse.current;

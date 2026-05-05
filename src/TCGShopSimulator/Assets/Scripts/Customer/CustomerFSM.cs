@@ -169,7 +169,13 @@ public class CustomerFSM : MonoBehaviour
         InstanceId    = instanceId;
         Intent        = intent;
         _spawnTime    = Time.time;
+        _lastDecisionTime = Time.time;
         _checkedShelfIds.Clear();
+        _examineStartTime = 0f;
+        _targetShelf = null;
+        _queueSlotIndex = -1;
+        _carriedItemId = string.Empty;
+        _carriedItemPrice = 0f;
         TransitionToState(CustomerState.EnterShop);
     }
 
@@ -279,9 +285,22 @@ public class CustomerFSM : MonoBehaviour
 
     private IEnumerator ExamineShelfCoroutine()
     {
-        if (_targetShelf == null || !_targetShelf.HasStock)
+        // Guard: shelf đã bị hủy giữa lúc di chuyển và Examine
+        if (_targetShelf == null)
         {
-            _checkedShelfIds.Add(_targetShelf?.GetInstanceID().ToString() ?? "null");
+            if (_verboseLogging)
+                Debug.Log($"[CustomerFSM] {InstanceId}: Target shelf was destroyed. Wandering.");
+            TransitionToState(CustomerState.Wander);
+            MoveToRandomWanderPoint();
+            yield break;
+        }
+
+        if (!_targetShelf.HasStock)
+        {
+            _checkedShelfIds.Add(_targetShelf.GetInstanceID().ToString());
+            if (_verboseLogging)
+                Debug.Log($"[CustomerFSM] {InstanceId}: Shelf out of stock. Wandering.");
+
             TransitionToState(CustomerState.Wander);
             MoveToRandomWanderPoint();
             yield break;
@@ -397,7 +416,8 @@ public class CustomerFSM : MonoBehaviour
         var cashierQueue = ShopFloorManager.Instance?.CashierQueue;
         if (cashierQueue == null || !cashierQueue.HasCashier)
         {
-            Debug.LogWarning($"[CustomerFSM] {InstanceId}: No cashier available. Leaving.");
+            Debug.LogWarning($"[CustomerFSM - {InstanceId}] No cashier available at state {CurrentState}. " +
+                            "Triggering Fallback to ExitShop.");
             TransitionToState(CustomerState.ExitShop);
             MoveToExit();
             return;
@@ -407,7 +427,8 @@ public class CustomerFSM : MonoBehaviour
 
         if (_queueSlotIndex < 0)
         {
-            Debug.LogWarning($"[CustomerFSM] {InstanceId}: Queue full. Leaving.");
+            Debug.LogWarning($"[CustomerFSM - {InstanceId}] Queue full at state {CurrentState}. " +
+                            "Triggering Fallback to ExitShop.");
             TransitionToState(CustomerState.ExitShop);
             MoveToExit();
             return;
@@ -464,14 +485,16 @@ public class CustomerFSM : MonoBehaviour
 
     private void HandleMovementPathNotFound()
     {
-        Debug.LogWarning($"[CustomerFSM] {InstanceId}: Path not found in state {CurrentState}. Wandering.");
+        Debug.LogWarning($"[CustomerFSM - {InstanceId}] PathNotFound in state {CurrentState}. " +
+                        "Falling back to Wander.");
         TransitionToState(CustomerState.Wander);
         MoveToRandomWanderPoint();
     }
 
     private void HandleMovementGoalAbandoned()
     {
-        Debug.LogWarning($"[CustomerFSM] {InstanceId}: Goal abandoned. Leaving shop.");
+        Debug.LogWarning($"[CustomerFSM - {InstanceId}] GoalAbandoned in state {CurrentState}. " +
+                        "Triggering Fallback to LeaveShop.");
         TransitionToState(CustomerState.ExitShop);
         MoveToExit();
     }

@@ -148,7 +148,23 @@ public class CharacterMovement : MonoBehaviour
 
     public void RequestPath(Vector2Int goalCell)
     {
-        if (GridSystem.Instance == null || PathfindingGrid.Instance == null) return;
+        if (GridSystem.Instance == null)
+        {
+            Debug.LogError($"[CharacterMovement - {gameObject.name}] GridSystem.Instance is null! " +
+                          $"Cannot request path to {goalCell}. FSM must handle this fallback.");
+            IsMoving = false;
+            OnGoalAbandoned?.Invoke();
+            return;
+        }
+
+        if (PathfindingGrid.Instance == null)
+        {
+            Debug.LogError($"[CharacterMovement - {gameObject.name}] PathfindingGrid.Instance is null! " +
+                          $"Pathfinding system unavailable. Abandoning goal {goalCell}.");
+            IsMoving = false;
+            OnGoalAbandoned?.Invoke();
+            return;
+        }
 
         _goalCell = goalCell;
         _recalculationCount = 0;
@@ -408,7 +424,6 @@ public class CharacterMovement : MonoBehaviour
 
         _staleHandlerCoroutine = null;
     }
-
     // =========================================================================
     // DEBUG GIZMOS
     // =========================================================================

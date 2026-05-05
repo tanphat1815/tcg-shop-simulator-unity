@@ -42,6 +42,12 @@ public class GhostObject : MonoBehaviour
         GetComponentsInChildren(true, _spriteRenderers);
         GetComponentsInChildren(true, _meshRenderers);
 
+        if (_spriteRenderers.Count == 0 && _meshRenderers.Count == 0)
+        {
+            Debug.LogWarning($"[GhostObject] Prefab '{gameObject.name}' has no SpriteRenderer or MeshRenderer! " +
+                            "Ghost will appear invisible.");
+        }
+
         foreach (var sr in _spriteRenderers)
         {
             if (sr.material != null)

@@ -35,6 +35,10 @@ public class InventoryManager : MonoBehaviour
              "Kéo thả CardDatabase_Main.asset vào đây.")]
     [SerializeField] private CardDatabase cardDatabase;
 
+    [Header("Debug")]
+    [Tooltip("Bật verbose logging cho mọi inventory operation. Tắt trong production.")]
+    [SerializeField] private bool verboseLogging = false;
+
     // =========================================================================
     // INVENTORY STATE — Dictionary<string, int> để O(1) lookup
     // =========================================================================
@@ -82,7 +86,8 @@ public class InventoryManager : MonoBehaviour
             _packInventory[packId] = 0;
 
         _packInventory[packId] += amount;
-        Debug.Log($"[InventoryManager] Added {amount}x '{packId}'. Total: {_packInventory[packId]}");
+        if (verboseLogging)
+            Debug.Log($"[InventoryManager] Added {amount}x '{packId}'. Total: {_packInventory[packId]}");
     }
 
     /// <summary>

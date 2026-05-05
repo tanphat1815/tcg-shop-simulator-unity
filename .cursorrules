@@ -1,42 +1,430 @@
-# TCG Shop Simulator Migration - Core Project Rules
+# TCG Shop Simulator — AI Project Protocol
 
-You are an expert Unity Game Developer migrating a TCG Shop Simulator from Phaser/Vue (Web) to Unity (C#). 
-Your goal is to maintain 100% architectural consistency and logic integrity.
-
-## 1. Primary Source of Truth
-Before performing any task, you MUST read and follow these documents:
-- @[Phân tích kiến trúc TCG Card Shop simulator.md]: Contains SQLite schemas, Pricing Algorithms, Gacha RNG logic, and Customer FSM.
-- @[Chuyển đổi Game TCG Isometric sang Unity.md]: Contains technical standards for Unity, Rendering pipeline (Z-as-Y), and the 8-step roadmap.
-- Step Instructions: @[step-1-cursor-instructions.md], @[step-2-cursor-instructions.md], @[step-3-cursor-instructions.md].
-
-## 2. Mandatory Workflow: Plan-First
-1. **Analyze**: Read the relevant section in the docs above.
-2. **Plan**: Propose a technical plan (pseudo-code, Hierarchy structure, Class relationships).
-3. **Approve**: Wait for user confirmation before writing C# code.
-4. **Execute**: Implement the code following the patterns below.
-
-## 3. Core Architectural Patterns (Non-Negotiable)
-- **Data-Driven**: Use `ScriptableObject` for all static data (CardData, PackData, FurnitureDefinition). NO hardcoded values in MonoBehaviours.
-- **Dependency Management**: Use a Singleton `GameManager` for core state. 
-- **Performance**: 
-  - NO `GameObject.Find()` or `GetComponent()` in `Update()`.
-  - Use `Dictionary<Vector2Int, GridNode>` for O(1) grid lookups.
-  - Use Object Pooling for Cards, Customers, and VFX.
-- **Input System**: Use **Unity New Input System**. All logic must support both Mouse (Desktop) and Touch (Mobile).
-- **Isometric Rendering**:
-  - `Transparency Sort Mode` = `Custom Axis`.
-  - `Transparency Sort Axis` = `(0, 1, -0.26)`.
-  - Pivot points for isometric sprites must be at the "Bottom Center" where they touch the floor.
-
-## 4. Coding Standards
-- Language: C# (Unity 2022+).
-- Clean Code: Small classes, meaningful names, XML comments for public methods.
-- Error Handling: Use `Debug.LogWarning` and `Debug.LogError` with context. Always check for `null` before accessing references.
-
-## 5. Specific Algorithm Constraints
-- **Gacha RNG**: Must use Cumulative Weighted Probability (refer to @[Phân tích kiến trúc TCG Card Shop simulator.md] Section 1.4).
-- **Pricing**: Follow the 4-step algorithm in Section 1.3 of the architectural doc.
-- **Pathfinding**: Use A* optimized for isometric grids (Section 4 of the architectural doc).
+> **Phiên bản:** 2.0 (2026-05-04)
+> **Dự án:** TCG Card Shop Simulator — Unity Port (Phaser/Vue → Unity C#)
+> **Engine:** Unity 6 LTS (6000.4.5f1)
+> **Quy tắc bắt buộc:** Đọc `_AIDocs/` TRƯỚC KHI bất kỳ thay đổi nào. Xem GIAI ĐOẠN 2 bên dưới.
 
 ---
-*Always refer to the project's MD files for deep logic details.*
+
+# GIAI ĐOẠN 1: NGUỒN TRI THỨC (Knowledge Sources)
+
+## 1.1 Documents bắt buộc
+
+Trước khi thực hiện bất kỳ task nào, **BẮT BUỘC** đọc các document sau theo thứ tự:
+
+| Priority | Document | Location | Mục đích |
+|---|---|---|---|
+| **0 (ĐỌC ĐẦU TIÊN)** | `src/_AIDocs/01_Project_Status.md` | Project state & progress | Hiểu dự án đang ở đâu, hệ thống nào đã implement |
+| **0 (ĐỌC ĐẦU TIÊN)** | `src/_AIDocs/02_Architecture_Map.md` | Data flow & file dependencies | Hiểu các file giao tiếp với nhau như thế nào |
+| **0 (ĐỌC ĐẦU TIÊN)** | `src/_AIDocs/03_Data_Structures.md` | All data structures | Hiểu tất cả ScriptableObject, struct, class definitions |
+| 1 | `src/CLAUDE.md` | Engine version & coding standards | Unity 6 API, VDD workflow |
+| 2 | `.cursorrules` (file này) | Current rules | Luật dự án (bạn đang ở đây) |
+| 3 | `step-*-cursor-instructions.md` | Migration history | Các bước đã thực hiện |
+| 4 | `design/CLAUDE.md` | GDD authoring | Design document standards |
+
+## 1.2 Migration Source Documents
+
+- `@[Phân tích kiến trúc TCG Card Shop simulator.md]`: SQLite schemas, Pricing Algorithms, Gacha RNG, Customer FSM
+- `@[Chuyển đổi Game TCG Isometric sang Unity.md]`: Technical standards, Z-as-Y rendering, 8-step roadmap
+
+---
+
+# GIAI ĐOẠN 2: GIAO THỨC CHUYỂN GIAO AI (AI Handover Protocol)
+
+> **MỤC ĐÍCH:** Đảm bảo mọi AI (Cursor, Claude Code, Codex...) làm việc sau này không bị mất bối cảnh.
+> **PHẠM VI:** Bắt buộc cho **MỌI** AI session làm việc trên dự án này.
+
+## 2.1 GIAO THỨC BẮT ĐẦU SESSION (Start-of-Session Protocol)
+
+Khi bắt đầu một session mới, AI **BẮT BUỘC** thực hiện đúng thứ tự sau:
+
+### BƯỚC 1: Đọc _AIDocs/ (BẮT BUỘC)
+
+```bash
+# Đọc theo thứ tự:
+1. src/_AIDocs/01_Project_Status.md
+2. src/_AIDocs/02_Architecture_Map.md
+3. src/_AIDocs/03_Data_Structures.md
+```
+
+**Lý do:** Các file này chứa toàn bộ bối cảnh dự án mà bất kỳ step instruction nào có thể đã lỗi thời. Một AI session mới không có lịch sử trò chuyện trước đó.
+
+**Nếu _AIDocs/ chưa tồn tại:** Dừng lại và hỏi user trước khi code bất cứ điều gì.
+
+### BƯỚC 2: Đọc step instruction gần nhất
+
+```
+Bước nào đang active?
+- step-8-cursor-instructions.md → đọc nếu Step 8 đang tiến hành
+- step-7-cursor-instructions.md → đọc nếu Step 7 đang tiến hành
+```
+
+### BƯỚC 3: Kiểm tra "Open Questions"
+
+Xem `src/_AIDocs/` có file `CHANGELOG.md` chưa. Nếu có, đọc phần "Open Questions" — những quyết định chưa được giải quyết từ session trước.
+
+## 2.2 GIAO THỨC KẾT THÚC SESSION (End-of-Session Protocol)
+
+Trước khi kết thúc session, AI **BẮT BUỘC** cập nhật `_AIDocs/`:
+
+### Cập nhật 01_Project_Status.md nếu có thay đổi:
+
+```markdown
+## Khi nào cập nhật:
+- Hoàn thành một Bước mới
+- Phát hiện issue/bug mới trong codebase
+- Thêm hệ thống mới
+- Thay đổi kiến trúc event/delegate
+
+## Cách cập nhật:
+1. Mở src/_AIDocs/01_Project_Status.md
+2. Cập nhật:
+   - [x] Section 2: Tiến độ (nếu Bước mới hoàn thành)
+   - [x] Section 3: Hệ thống đã implement (nếu có thêm)
+   - [x] Section 5: Event diagram (nếu có thêm event)
+   - [x] Section 7: Known Issues (nếu phát hiện issue mới)
+   - [x] Header: Ngày cập nhật mới
+3. Lưu file
+```
+
+### Cập nhật 02_Architecture_Map.md nếu có thay đổi:
+
+```markdown
+## Khi nào cập nhật:
+- Thêm file mới
+- Thay đổi data flow giữa các hệ thống
+- Thêm interface/base class mới
+- Thay đổi singleton registry
+
+## Cách cập nhật:
+1. Mở src/_AIDocs/02_Architecture_Map.md
+2. Cập nhật:
+   - [x] Section 2: Data Flow (nếu thêm flow mới)
+   - [x] Section 3: File Dependencies (thêm file vào diagram)
+   - [x] Section 6: Scalability section (nếu thêm Staff AI, Play Tables...)
+3. Lưu file
+```
+
+### Cập nhật 03_Data_Structures.md nếu có thay đổi:
+
+```markdown
+## Khi nào cập nhật:
+- Thêm ScriptableObject mới
+- Thêm enum mới
+- Thêm struct/class mới
+- Thay đổi công thức (economic, gacha, pathfinding)
+
+## Cách cập nhật:
+1. Mở src/_AIDocs/03_Data_Structures.md
+2. Thêm section mới cho data structure với đầy đủ declaration
+3. Lưu file
+```
+
+## 2.3 GIAO THỨC KHI VIẾT CODE (On-Code Protocol)
+
+Mỗi khi viết code, **BẮT BUỘC** tuân theo:
+
+```
+THAY ĐỔI NHỎ (sửa 1-2 dòng, fix bug nhỏ):
+  → Không cần cập nhật _AIDocs/
+
+THAY ĐỔI VỪA (thêm property mới, thêm method, refactor 1 file):
+  → Cập nhật section liên quan trong _AIDocs/03_Data_Structures.md
+
+THAY ĐỔI LỚN (thêm hệ thống mới, thêm nhiều file, thay đổi kiến trúc):
+  → Cập nhật TẤT CẢ _AIDocs/:
+    - 01_Project_Status.md (hệ thống mới, issues)
+    - 02_Architecture_Map.md (data flow, dependencies)
+    - 03_Data_Structures.md (data structures mới)
+
+QUY TẮC VÀNG:
+  → "Nếu một AI khác đọc _AIDocs/ sau khi tôi kết thúc,
+     họ có đủ thông tin để tiếp tục không?"
+  → Nếu KHÔNG → cập nhật _AIDocs/ NGAY.
+```
+
+---
+
+# GIAI ĐOẠN 3: MẪU KIẾN TRÚC BẮT BUỘC (Non-Negotiable Patterns)
+
+## 3.1 Data-Driven
+
+```
+✅ DÙNG: ScriptableObject cho all static data
+   CardData, PackData, RarityDefinition, FurnitureDefinition
+
+❌ CẤM: Giá trị gameplay hardcoded trong MonoBehaviour
+```
+
+## 3.2 Event-Driven Communication
+
+```
+✅ DÙNG: Delegate/Event pattern cho cross-system communication
+   CustomerFSM → CharacterMovement events
+   PathfindingGrid → OnGridChanged
+   PlacementManager → OnFurniturePlaced
+
+❌ CẤM: GameObject.Find(), GetComponent() trong Update()
+❌ CẤM: Direct reference giữa unrelated systems
+```
+
+## 3.3 O(1) Lookups
+
+```
+✅ DÙNG: Dictionary<Vector2Int, GridNode> cho grid
+✅ DÙNG: Dictionary<string, PackData> cho card lookup
+✅ DÙNG: Dictionary<string, int> cho inventory
+
+❌ CẤM: List.Find() cho runtime lookups trong gameplay
+```
+
+## 3.4 Graceful Fallbacks
+
+```
+✅ BẮT BUỘC: Mọi lỗi phải có:
+  1. Debug.LogError với context cực kỳ cụ thể
+  2. Fallback action để game tiếp tục chạy
+  3. KHÔNG BAO GIỜ để NPC đứng im (freeze)
+
+VÍ DỤ ĐÚNG:
+  Debug.LogError($"[CustomerFSM - {InstanceId}] PathNotFound to Shelf_02 at {targetCell}. " +
+                "Triggering Fallback to ExitShop.");
+  TransitionToState(CustomerState.ExitShop);
+
+VÍ DỤ SAI:
+  Debug.LogWarning("Path not found."); // Không có context!
+  return; // Silent fail — NPC đứng im!
+```
+
+## 3.5 Isometric Rendering
+
+```
+✅ BẮT BUỘC:
+  - TransparencySortMode = Custom Axis
+  - TransparencySortAxis = (0, 1, -0.26)
+  - Pivot = Bottom Center cho tất cả sprites
+  - SortingOrder = round(worldY × -100) + offset
+```
+
+## 3.6 Input System
+
+```
+✅ BẮT BUỘC: Unity New Input System cho mọi input
+  - Mouse.current cho desktop
+  - Touch.activeTouches cho mobile
+  - Keyboard.current cho keyboard shortcuts
+
+❌ CẤM: Input.GetKey, Input.GetMouseButton (old Input system)
+```
+
+## 3.7 Logging Standards
+
+```
+✅ FORMAT BẮT BUỘC:
+  [ClassName] {InstanceId hoặc context cụ thể}: {action} {result}
+
+VÍ DỤ:
+  [CustomerFSM - customer_0042_1715001234] PathNotFound in state SeekingShelf. 
+    Target: Shelf_02 at Vector2Int(5,5). Triggering Fallback to ExitShop.
+
+  [PathfindingCore] Start cell (3,3) → Goal cell (5,5). 
+    Path found: 4 steps. Time: 0.12ms.
+
+❌ SAI:
+  Debug.Log("Path not found");           // Không có class name!
+  Debug.LogWarning("Error");              // Không có context!
+```
+
+---
+
+# GIAI ĐOẠN 4: THUẬT TOÁN BẮT BUỘC
+
+## 4.1 Gacha RNG — Cumulative Weighted Probability
+
+```
+CÔNG THỨC:
+  1. Tính totalWeight = tổng tất cả weights trong slot
+  2. Roll = Random.Range(0f, totalWeight)
+  3. Duyệt cumulative: roll < cumulativeWeight → chọn rarity
+
+KHÔNG DÙNG: Random.value < rarityPercent (normalize thủ công)
+PHẢI DÙNG: Cumulative weighted probability như trên
+```
+
+## 4.2 Economic Decision
+
+```
+priceRatio = sellPrice / marketPrice
+
+IF priceRatio <= 1.0:
+    probability = 0.95
+
+ELSE:
+    steps = FLOOR((priceRatio - 1.0) × 100 / 5)
+    probability = MAX(0.95 - steps × 0.15, 0.0)
+
+QUYẾT ĐỊNH:
+  probability == 0.0 → AbsoluteRefusal → Angry bubble
+  probability < 0.40  → NormalRefusal  → Neutral bubble
+  probability >= 0.40 → HappyPurchase  → Heart bubble
+```
+
+## 4.3 A* Pathfinding
+
+```
+HEURISTIC: Manhattan Distance (|dx| + |dy|) × 10
+OPEN LIST: MinHeap<PathNode> (O(log n))
+CLOSED SET: HashSet<PathNode> (O(1))
+DIAGONAL: Disabled (4-directional only)
+```
+
+---
+
+# GIAI ĐOẠN 5: CẤU TRÚC THƯ MỤC
+
+```
+src/TCGShopSimulator/Assets/
+├── Scripts/
+│   ├── Camera/          # CameraController
+│   ├── Character/       # CharacterMovement
+│   ├── Core/            # GameManager, SceneBootstrapper
+│   ├── Customer/        # CustomerFSM, CustomerSpawner, EconomicDecisionEngine
+│   ├── Data/            # All ScriptableObjects
+│   ├── Debug/           # Debug testers (NOT in production build)
+│   ├── Editor/          # Custom inspectors (Editor only)
+│   ├── Gacha/          # GachaEngine, GachaResult
+│   ├── Grid/            # GridSystem, GridNode, GridVisualizer
+│   ├── Inventory/       # InventoryManager, InventoryEntry
+│   ├── Pathfinding/     # PathfindingCore, PathfindingGrid, PathNode, MinHeap
+│   ├── Placement/       # PlacementManager, GhostObject, PlacedFurnitureInstance
+│   ├── Shop/            # ShopFloorManager, ShelfInstance, CashierQueueManager
+│   ├── UI/              # SpeechBubble, future UI
+│   └── World/           # IsometricSortingController
+└── Scenes/
+    └── GameScene.unity
+
+src/_AIDocs/              # AI LIVING DOCUMENTATION (đọc TRƯỚC KHI code)
+├── 01_Project_Status.md  # Trạng thái dự án
+├── 02_Architecture_Map.md # Sơ đồ luồng dữ liệu
+├── 03_Data_Structures.md # Tất cả data structures
+└── (tương lai: 04_Open_Questions.md, 05_Changelog.md)
+```
+
+---
+
+# GIAI ĐOẠN 6: OPEN/CLOSED PRINCIPLE
+
+## 6.1 Mở rộng cho Staff AI
+
+```csharp
+// ✅ ĐÚNG: Staff AI mở rộng từ EntityBase interface
+public interface IAgent
+{
+    string AgentId { get; }
+    float EvaluatePriority();
+    void ExecuteAction();
+}
+
+public abstract class EntityBase : MonoBehaviour
+{
+    protected CharacterMovement Movement;
+    protected IAgent Agent;
+}
+
+// CustomerFSM : EntityBase → sử dụng existing CharacterMovement
+// StaffAI : EntityBase     → reuse CharacterMovement, override IAgent
+```
+
+## 6.2 Mở rộng cho Play Tables
+
+```csharp
+// ✅ ĐÚNG: PlayTable mở rộng từ IInteractable
+public interface IInteractable
+{
+    bool CanInteract(CharacterBase agent);
+    void Interact(CharacterBase agent);
+}
+
+public class ShelfInstance : MonoBehaviour, IInteractable { /* existing */ }
+public class PlayTableInstance : MonoBehaviour, IInteractable { /* NEW */ }
+```
+
+---
+
+# GIAI ĐOẠN 7: DEBUG SCRIPTS
+
+```
+Debug scripts (Assets/Scripts/Debug/) PHẢI:
+  ✅ Có [Header] annotations rõ ràng
+  ✅ Disable bằng enabled = false sau khi test xong
+  ✅ Có #if UNITY_EDITOR cho gizmos
+  ✅ Console log thông tin rõ ràng
+
+Debug scripts KHÔNG ĐƯỢC:
+  ❌ Trong production build (use [Conditional("UNITY_EDITOR")] or disable)
+  ❌ Giữ enabled trong final scene
+  ❌ Gây performance overhead
+```
+
+---
+
+# GIAI ĐOẠN 8: TESTING
+
+```
+UNIT TESTS: tests/ (không phải trong Assets/Scripts/)
+  - EconomicDecisionEngine formula
+  - GachaEngine probability distribution
+  - PathfindingCore path correctness
+  - GridSystem placement validation
+
+TDD WORKFLOW:
+  1. Write test (RED) — test phải FAIL
+  2. Write implementation (GREEN) — test phải PASS
+  3. Refactor (IMPROVE) — verify 80%+ coverage
+```
+
+---
+
+# GIAI ĐOẠN 9: VERIFICATION
+
+```
+Trước khi báo cáo hoàn thành, xác nhận:
+  ✅ Code compile không lỗi
+  ✅ Không có Debug.LogError() không có context
+  ✅ Tất cả Singleton đều có null guard
+  ✅ Tất cả event subscriptions có OnDestroy unsubscribe
+  ✅ NPC không đứng im khi pathfinding fail
+  ✅ _AIDocs/ đã được cập nhật (nếu có thay đổi lớn)
+```
+
+---
+
+# GIAI ĐOẠN 10: CHECKLIST TRƯỚC MỖI SESSION
+
+```
+□ Đã đọc src/_AIDocs/01_Project_Status.md
+□ Đã đọc src/_AIDocs/02_Architecture_Map.md
+□ Đã đọc src/_AIDocs/03_Data_Structures.md
+□ Đã xác định Bước hiện tại (Step nào đang active)
+□ Đã kiểm tra Open Questions trong _AIDocs/
+□ Đã hiểu data flow giữa các hệ thống liên quan đến task
+□ Đã tuân thủ Event pattern (không dùng GameObject.Find)
+□ Đã thêm fallback cho mọi error path
+□ Đã cập nhật _AIDocs/ (nếu có thay đổi lớn)
+□ Đã kiểm tra logging context
+```
+
+---
+
+# LỊCH SỬ CẬP NHẬT
+
+| Ngày | Phiên bản | Thay đổi | Bởi |
+|---|---|---|---|
+| 2026-05-04 | 2.0 | Thêm AI Handover Protocol, _AIDocs integration, Logging Standards | AI Architect |
+| (trước đó) | 1.x | Initial .cursorrules | Migration session |
+
+---
+
+*Cập nhật: 2026-05-04 | Phiên bản: 2.0 | Project: TCG Shop Simulator Unity Port*
+

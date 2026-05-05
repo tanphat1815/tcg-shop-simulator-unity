@@ -70,6 +70,10 @@ public class SpeechBubble : MonoBehaviour
             _canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         _mainCamera = Camera.main;
+        if (_mainCamera == null)
+        {
+            Debug.LogWarning("[SpeechBubble] Camera.main is null. Billboard effect disabled.");
+        }
 
         _canvasGroup.alpha    = 0f;
         transform.localScale = Vector3.zero;

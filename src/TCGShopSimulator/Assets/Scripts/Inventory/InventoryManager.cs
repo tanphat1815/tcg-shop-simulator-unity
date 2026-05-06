@@ -38,6 +38,17 @@ public class InventoryManager : MonoBehaviour
     [Header("Debug")]
     [Tooltip("Bật verbose logging cho mọi inventory operation. Tắt trong production.")]
     [SerializeField] private bool verboseLogging = false;
+    
+    [Header("Testing / Initial State")]
+    [Tooltip("Danh sách Pack có sẵn khi bắt đầu game (chỉ dùng để test hoặc khởi tạo).")]
+    [SerializeField] private List<InitialPackEntry> _initialPacks = new List<InitialPackEntry>();
+
+    [System.Serializable]
+    public class InitialPackEntry
+    {
+        public string packId;
+        public int count;
+    }
 
     // =========================================================================
     // INVENTORY STATE — Dictionary<string, int> để O(1) lookup
@@ -68,6 +79,16 @@ public class InventoryManager : MonoBehaviour
         }
 
         cardDatabase.Initialize();
+        
+        // Nạp hàng từ danh sách Initial Packs vào dictionary
+        foreach (var entry in _initialPacks)
+        {
+            if (!string.IsNullOrEmpty(entry.packId) && entry.count > 0)
+            {
+                AddPack(entry.packId, entry.count);
+            }
+        }
+
         Debug.Log("[InventoryManager] Initialized.");
     }
 
@@ -82,12 +103,16 @@ public class InventoryManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(packId) || amount <= 0) return;
 
+        int prev = _packInventory.TryGetValue(packId, out int existing) ? existing : 0;
+
         if (!_packInventory.ContainsKey(packId))
             _packInventory[packId] = 0;
 
         _packInventory[packId] += amount;
         if (verboseLogging)
             Debug.Log($"[InventoryManager] Added {amount}x '{packId}'. Total: {_packInventory[packId]}");
+
+        GameEconomyEvents.FirePackInventoryChanged(packId, prev, _packInventory[packId]);
     }
 
     /// <summary>
@@ -116,9 +141,13 @@ public class InventoryManager : MonoBehaviour
             return null;
         }
 
+        int prev = _packInventory.TryGetValue(packId, out int existingBefore) ? existingBefore : 0;
+
         _packInventory[packId]--;
         if (_packInventory[packId] <= 0)
             _packInventory.Remove(packId);
+
+        GameEconomyEvents.FirePackInventoryChanged(packId, prev, _packInventory.TryGetValue(packId, out int after) ? after : 0);
 
         GachaResult result = GachaEngine.OpenPack(pack);
 

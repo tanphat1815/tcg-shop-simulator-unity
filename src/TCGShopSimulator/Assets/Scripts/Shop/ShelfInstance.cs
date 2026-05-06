@@ -60,6 +60,12 @@ public class ShelfInstance : MonoBehaviour
     /// <summary>Khi player set giá mới. CustomerFSM đang ExamineShelf cần re-evaluate.</summary>
     public event Action<ShelfInstance, float> OnPriceChanged;
 
+    /// <summary>
+    /// Kích hoạt khi Player raycast vào kệ hàng này.
+    /// ShelfManagementUI subscribe để mở panel.
+    /// </summary>
+    public event Action<ShelfInstance> OnShelfInteracted;
+
     // =========================================================================
     // PROPERTIES
     // =========================================================================
@@ -168,6 +174,30 @@ public class ShelfInstance : MonoBehaviour
     {
         if (definition == null) return;
         _isSellingShelf = definition.shelfRole == ShelfRole.Selling;
+    }
+
+    /// <summary>
+    /// Unique entity ID cho shelf này. Dùng để track trong HashSet.
+    /// </summary>
+    public int GetEntityId() => GetInstanceID();
+
+    /// <summary>
+    /// Gọi từ PlayerRaycastHandler khi player click vào kệ.
+    /// Fire OnShelfInteracted event.
+    /// </summary>
+    public void NotifyInteracted()
+    {
+        OnShelfInteracted?.Invoke(this);
+        
+        // Direct call to UI singleton to ensure it opens
+        if (ShelfManagementUI.Instance != null)
+        {
+            ShelfManagementUI.Instance.Show(this);
+        }
+        else
+        {
+            Debug.LogWarning("[ShelfInstance] ShelfManagementUI.Instance is null! Cannot show UI.");
+        }
     }
 
     public override string ToString() =>

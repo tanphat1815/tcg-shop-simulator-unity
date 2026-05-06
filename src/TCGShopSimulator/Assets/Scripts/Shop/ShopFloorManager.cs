@@ -66,6 +66,12 @@ public class ShopFloorManager : MonoBehaviour
         if (_cashierQueue != null)
             _cashierQueue.OnTransactionCompleted += HandleTransactionCompleted;
 
+        if (ShopTransactionProcessor.Instance == null)
+        {
+            var processor = gameObject.AddComponent<ShopTransactionProcessor>();
+            Debug.Log("[ShopFloorManager] Auto-added ShopTransactionProcessor.");
+        }
+
         Debug.Log("[ShopFloorManager] Initialized.");
     }
 
@@ -163,10 +169,14 @@ public class ShopFloorManager : MonoBehaviour
 
     private void HandleTransactionCompleted(float amount, string itemId)
     {
+        float prevMoney = _totalMoney;
+
         _totalMoney            += amount;
         _dailyRevenue          += amount;
         _customersServedToday  ++;
         _itemsSoldToday        ++;
+
+        GameEconomyEvents.FireMoneyChanged(prevMoney, _totalMoney);
 
         Debug.Log($"[ShopFloorManager] Transaction: +${amount:F2}. " +
                   $"Daily Revenue: ${_dailyRevenue:F2}. Total: ${_totalMoney:F2}");

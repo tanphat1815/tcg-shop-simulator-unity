@@ -49,14 +49,76 @@ public class GameManager : MonoBehaviour
     {
         if (Instance != null) return;
 
-        // Tạo GameObject mới để host GameManager
         var go = new GameObject("[GameManager]");
-        
-        // AddComponent sẽ trigger Awake() ngay lập tức
         go.AddComponent<GameManager>();
-        
-        // Đảm bảo không bị destroy khi chuyển Scene
         DontDestroyOnLoad(go);
+    }
+
+    // ========================================================================
+    // XP & LEVEL STATE
+    // ========================================================================
+
+    [Header("Player Progression")]
+    [Tooltip("Current player level.")]
+    [SerializeField] private int _currentLevel = 1;
+
+    [Tooltip("Current experience points (XP).")]
+    [SerializeField] private int _currentExp = 0;
+
+    [Tooltip("Total packs opened for stats.")]
+    [SerializeField] private int _totalPacksOpened = 0;
+
+    public int CurrentLevel => _currentLevel;
+    public int CurrentExp => _currentExp;
+    public int TotalPacksOpened => _totalPacksOpened;
+
+    /// <summary>
+    /// XP required to reach the next level.
+    /// Formula: level * 1000
+    /// </summary>
+    public int XpToNextLevel => _currentLevel * 1000;
+
+    // ========================================================================
+    // XP & LEVEL API
+    // ========================================================================
+
+    /// <summary>
+    /// Set experience points. Called by ShopTransactionProcessor after XP gain.
+    /// </summary>
+    public void SetExp(int newExp)
+    {
+        _currentExp = Mathf.Max(0, newExp);
+    }
+
+    /// <summary>
+    /// Add experience points and handle level up.
+    /// </summary>
+    public void AddExp(int amount)
+    {
+        int newExp = _currentExp + amount;
+        int level = _currentLevel;
+        int xpRequired = XpToNextLevel;
+
+        while (newExp >= xpRequired && xpRequired > 0)
+        {
+            newExp -= xpRequired;
+            level++;
+            xpRequired = level * 1000;
+            GameEconomyEvents.FireLevelUp(level);
+        }
+
+        _currentExp = newExp;
+        _currentLevel = level;
+
+        Debug.Log($"[GameManager] +{amount} XP. Exp: {_currentExp}/{XpToNextLevel}, Level: {_currentLevel}");
+    }
+
+    /// <summary>
+    /// Increment pack opened counter.
+    /// </summary>
+    public void IncrementPacksOpened()
+    {
+        _totalPacksOpened++;
     }
 
     private void Awake()

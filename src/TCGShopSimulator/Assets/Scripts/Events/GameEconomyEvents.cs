@@ -146,6 +146,17 @@ public static class GameEconomyEvents
     {
         OnLevelUp?.Invoke(newLevel);
     }
+
+    /// <summary>
+    /// Kích hoạt khi toàn bộ game state được load xong từ save.
+    /// Subscriber: MoneyDisplay, InventoryPanelUI, any UI cần refresh toàn bộ.
+    /// </summary>
+    public static event Action<GameData> OnGameDataLoaded;
+
+    public static void FireGameDataLoaded(GameData data)
+    {
+        OnGameDataLoaded?.Invoke(data);
+    }
 }
 
 // ========================================================================

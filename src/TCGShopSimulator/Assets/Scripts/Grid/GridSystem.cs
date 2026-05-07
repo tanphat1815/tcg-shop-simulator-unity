@@ -309,9 +309,146 @@ public class GridSystem : MonoBehaviour
                   $"Added {newCellCount} new cells. Total cells: {_grid.Count}.");
     }
 
-    // =========================================================================
+    // ========================================================================
+    // PERSISTENCE — Save/Load
+    // ========================================================================
+
+    /// <summary>
+    /// Lấy toàn bộ placed furniture data cho serialization.
+    /// </summary>
+    public System.Collections.Generic.List<GameData.PlacedShelfData> GetAllPlacedFurnitureData()
+    {
+        var result = new System.Collections.Generic.List<GameData.PlacedShelfData>();
+
+        var instances = UnityEngine.Object.FindObjectsOfType<PlacedFurnitureInstance>();
+        foreach (var instance in instances)
+        {
+            if (instance == null || instance.Definition == null) continue;
+
+            var shelf = instance.GetComponent<ShelfInstance>();
+            string itemId = shelf?.DisplayedItemId ?? string.Empty;
+            int stock = shelf?.StockCount ?? 0;
+            float price = shelf?.CurrentSellPrice ?? 0f;
+            float market = shelf?.MarketPrice ?? 0f;
+
+            result.Add(GameData.PlacedShelfData.FromShelfInstance(
+                instance.InstanceId,
+                instance.Definition.furnitureType.ToString(),
+                instance.OriginCell,
+                instance.PlacedRotation,
+                itemId, stock, price, market
+            ));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Restore tất cả furniture từ GameData.
+    /// Gọi callback khi mỗi furniture được restore xong.
+    /// </summary>
+    public void RestoreAllFurniture(GameData data, System.Action onEachRestored)
+    {
+        if (data.placedFurniture == null || data.placedFurniture.Count == 0)
+        {
+            onEachRestored?.Invoke();
+            return;
+        }
+
+        foreach (var shelfData in data.placedFurniture)
+        {
+            RestoreSingleFurniture(shelfData, onEachRestored);
+        }
+    }
+
+    /// <summary>
+    /// Restore một furniture đơn lẻ.
+    /// </summary>
+    private void RestoreSingleFurniture(GameData.PlacedShelfData shelfData, System.Action onEachRestored)
+    {
+        // Parse furniture type enum
+        if (!System.Enum.TryParse<FurnitureType>(shelfData.furnitureTypeName, out FurnitureType fType))
+        {
+            Debug.LogWarning($"[GridSystem] RestoreSingleFurniture: Unknown furniture type '{shelfData.furnitureTypeName}'");
+            onEachRestored?.Invoke();
+            return;
+        }
+
+        FurnitureDefinition definition = GetFurnitureDefinition(fType);
+        if (definition == null || definition.furniturePrefab == null)
+        {
+            Debug.LogWarning($"[GridSystem] RestoreSingleFurniture: Definition not found for {fType}");
+            onEachRestored?.Invoke();
+            return;
+        }
+
+        Vector2Int originCell = new Vector2Int(shelfData.originCellX, shelfData.originCellY);
+
+        // Calculate world position
+        Vector3 worldPos = GetCenteredWorldPosition(originCell, definition, shelfData.rotation);
+
+        // Instantiate prefab
+        Transform parent = GetFurnitureParent();
+        var go = UnityEngine.Object.Instantiate(
+            definition.furniturePrefab,
+            worldPos,
+            Quaternion.Euler(0, 0, shelfData.rotation),
+            parent
+        );
+        go.name = $"[Restored] {fType}";
+
+        // Confirm placement in grid
+        ConfirmPlacement(originCell, definition, shelfData.rotation, shelfData.instanceId);
+
+        // Setup PlacedFurnitureInstance
+        var placedFurniture = go.GetComponent<PlacedFurnitureInstance>();
+        if (placedFurniture == null)
+            placedFurniture = go.AddComponent<PlacedFurnitureInstance>();
+
+        placedFurniture.Initialize(
+            shelfData.instanceId,
+            definition,
+            originCell,
+            shelfData.rotation
+        );
+
+        // Setup shelf stock (đợi Start() gọi RegisterShelf)
+        var shelf = go.GetComponent<ShelfInstance>();
+        if (shelf != null)
+        {
+            shelf.SetupRestoredStock(
+                shelfData.displayedItemId,
+                shelfData.stockCount,
+                shelfData.sellPrice,
+                shelfData.marketPrice
+            );
+        }
+
+        onEachRestored?.Invoke();
+    }
+
+    /// <summary>
+    /// Tìm FurnitureDefinition trong Resources.
+    /// </summary>
+    private FurnitureDefinition GetFurnitureDefinition(FurnitureType type)
+    {
+        return UnityEngine.Resources.Load<FurnitureDefinition>($"Data/Furniture_{type}");
+    }
+
+    /// <summary>
+    /// Transform parent chứa placed furniture.
+    /// </summary>
+    private Transform GetFurnitureParent()
+    {
+        var existing = GameObject.Find("[Furniture]");
+        if (existing != null) return existing.transform;
+        var parent = new GameObject("[Furniture]");
+        return parent.transform;
+    }
+
+    // ========================================================================
     // DEBUG
-    // =========================================================================
+    // ========================================================================
 
     [ContextMenu("Debug: Print Grid State")]
     public void PrintGridState()

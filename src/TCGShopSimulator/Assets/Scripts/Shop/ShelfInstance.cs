@@ -47,9 +47,23 @@ public class ShelfInstance : MonoBehaviour
 
     private PlacedFurnitureInstance _furnitureInstance;
 
-    // =========================================================================
+    // ========================================================================
+    // PERSISTENCE — Restore state (before Start() runs)
+    // ========================================================================
+    private bool _skipFirstRegister = false;
+    private ShelfRestoredState _pendingRestoredState;
+
+    private struct ShelfRestoredState
+    {
+        public string itemId;
+        public int qty;
+        public float price;
+        public float market;
+    }
+
+    // ========================================================================
     // EVENTS
-    // =========================================================================
+    // ========================================================================
 
     /// <summary>Khi hàng thay đổi số lượng. ShopFloorManager subscribe.</summary>
     public event Action<ShelfInstance> OnStockChanged;
@@ -95,6 +109,23 @@ public class ShelfInstance : MonoBehaviour
 
     private void Start()
     {
+        // Nếu đang restore từ save, bỏ qua đăng ký lần đầu
+        if (_skipFirstRegister)
+        {
+            _skipFirstRegister = false;
+            if (_pendingRestoredState.qty > 0)
+            {
+                SetStock(
+                    _pendingRestoredState.itemId,
+                    _pendingRestoredState.qty,
+                    _pendingRestoredState.price,
+                    _pendingRestoredState.market
+                );
+            }
+            _pendingRestoredState = default;
+            return;
+        }
+
         if (ShopFloorManager.Instance != null)
             ShopFloorManager.Instance.RegisterShelf(this);
     }
@@ -182,6 +213,12 @@ public class ShelfInstance : MonoBehaviour
     public int GetEntityId() => GetInstanceID();
 
     /// <summary>
+    /// Instance ID of the underlying PlacedFurnitureInstance.
+    /// Used for save/load matching.
+    /// </summary>
+    public string InstanceId => _furnitureInstance?.InstanceId ?? string.Empty;
+
+    /// <summary>
     /// Gọi từ PlayerRaycastHandler khi player click vào kệ.
     /// Fire OnShelfInteracted event.
     /// </summary>
@@ -202,4 +239,48 @@ public class ShelfInstance : MonoBehaviour
 
     public override string ToString() =>
         $"Shelf[{_displayedItemId}|Qty={_stockCount}|Price=${_currentSellPrice:F2}|Market=${_marketPrice:F2}]";
+
+    // ========================================================================
+    // PERSISTENCE
+    // ========================================================================
+
+    /// <summary>
+    /// Setup shelf sau khi được restore từ save.
+    /// Gọi bởi GridSystem.RestoreSingleFurniture() TRƯỚC KHI Start().
+    /// Lưu state vào _pendingRestoredState, Start() sẽ đọc và áp dụng.
+    /// </summary>
+    public void SetupRestoredStock(string itemId, int qty, float price, float market)
+    {
+        _skipFirstRegister = true;
+        _pendingRestoredState = new ShelfRestoredState
+        {
+            itemId = itemId,
+            qty = qty,
+            price = price,
+            market = market
+        };
+    }
+
+    /// <summary>
+    /// Restore stock từ GameData (gọi sau khi tất cả furniture instantiated).
+    /// Dùng cho trường hợp shelf đã Start rồi nhưng stock chưa restore.
+    /// </summary>
+    public void RestoreStockFromGameData(GameData data)
+    {
+        if (data.placedFurniture == null) return;
+
+        foreach (var shelfData in data.placedFurniture)
+        {
+            if (shelfData.instanceId == InstanceId)
+            {
+                SetStock(
+                    shelfData.displayedItemId,
+                    shelfData.stockCount,
+                    shelfData.sellPrice,
+                    shelfData.marketPrice
+                );
+                return;
+            }
+        }
+    }
 }

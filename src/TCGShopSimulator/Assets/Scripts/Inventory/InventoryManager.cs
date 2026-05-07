@@ -205,6 +205,43 @@ public class InventoryManager : MonoBehaviour
         return _packInventory;
     }
 
+    /// <summary>
+    /// Load inventory từ GameData (rehydration).
+    /// Xóa state hiện tại và thay bằng dữ liệu từ save.
+    /// </summary>
+    public void LoadFromGameData(GameData data)
+    {
+        // Clear existing
+        _packInventory.Clear();
+        _cardBinder.Clear();
+
+        // Restore packs
+        if (data.packInventory != null)
+        {
+            foreach (var entry in data.packInventory)
+            {
+                if (!string.IsNullOrEmpty(entry.packId) && entry.quantity > 0)
+                {
+                    _packInventory[entry.packId] = entry.quantity;
+                }
+            }
+        }
+
+        // Restore binder
+        if (data.cardBinder != null)
+        {
+            foreach (var entry in data.cardBinder)
+            {
+                if (!string.IsNullOrEmpty(entry.cardId) && entry.quantity > 0)
+                {
+                    _cardBinder[entry.cardId] = entry.quantity;
+                }
+            }
+        }
+
+        Debug.Log($"[InventoryManager] Loaded: {_packInventory.Count} pack types, {_cardBinder.Count} card types.");
+    }
+
     // =========================================================================
     // DATABASE ACCESS
     // =========================================================================

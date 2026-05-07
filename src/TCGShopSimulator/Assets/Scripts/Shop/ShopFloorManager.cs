@@ -199,6 +199,15 @@ public class ShopFloorManager : MonoBehaviour
     public float TotalMoney   => _totalMoney;
     public float DailyRevenue => _dailyRevenue;
 
+    /// <summary>
+    /// Set money trực tiếp (dùng cho rehydration).
+    /// KHÔNG fire event ở đây — GameDataManager fire sau khi tất cả rehydrated.
+    /// </summary>
+    public void SetMoney(float amount)
+    {
+        _totalMoney = amount;
+    }
+
     /// <summary>Reset thống kê ngày mới. Gọi bởi TimeManager khi sang ngày mới.</summary>
     public void ResetDailyStats()
     {

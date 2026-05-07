@@ -144,8 +144,16 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void InitializeSystems()
     {
-        // Bước 1: Bước này chưa có hệ thống con, chỉ đánh dấu ready
-        // Các bước sau sẽ thêm: Economy, Inventory, CustomerAI, v.v.
+        // Đảm bảo GameDataManager tồn tại trước khi load
+        if (GameDataManager.Instance == null)
+        {
+            var gdm = gameObject.AddComponent<GameDataManager>();
+            Debug.Log("[GameManager] Auto-added GameDataManager.");
+        }
+
+        // Load game data (rehydration) — gọi sau khi tất cả systems Awake xong
+        if (GameDataManager.Instance != null)
+            GameDataManager.Instance.LoadGame();
 
         IsReady = true;
 
@@ -160,17 +168,16 @@ public class GameManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        if (GameDataManager.Instance != null)
+            GameDataManager.Instance.OnApplicationQuit();
         IsReady = false;
         Debug.Log("[GameManager] Application quitting. Shutting down systems.");
     }
 
     private void OnApplicationPause(bool pauseStatus)
     {
-        if (pauseStatus)
-        {
-            Debug.Log("[GameManager] Application paused. Saving state...");
-            // SaveSystem.Save(); // Sẽ implement ở bước sau
-        }
+        if (GameDataManager.Instance != null)
+            GameDataManager.Instance.OnApplicationPaused(pauseStatus);
     }
 
     // =========================================================================

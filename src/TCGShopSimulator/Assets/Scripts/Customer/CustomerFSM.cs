@@ -571,6 +571,58 @@ public class CustomerFSM : MonoBehaviour
     }
 
     // =========================================================================
+    // CLOSING TIME
+    // =========================================================================
+
+    /// <summary>
+    /// Gọi bởi TimeManager khi shop đóng cửa.
+    ///
+    /// Rules:
+    ///   PLAYING/WANT_TO_PLAY/SEEK_TABLE → LEAVE immediately
+    ///   WANDER/SEEKING_SHELF → LEAVE immediately
+    ///   QUEUE_AT_CHECKOUT/WAITING_IN_LINE → stay (complete transaction)
+    ///   EXIT_SHOP → do nothing
+    /// </summary>
+    public void HandleClosingTime()
+    {
+        switch (CurrentState)
+        {
+            case CustomerState.Playing:
+            case CustomerState.WantToPlay:
+            case CustomerState.SeekingTable:
+                if (_assignedTable != null)
+                {
+                    _assignedTable.FreeSeat(this);
+                    _assignedTable = null;
+                }
+                if (_movement != null)
+                    _movement.enabled = true;
+                TransitionToState(CustomerState.ExitShop);
+                MoveToExit();
+                Debug.Log($"[CustomerFSM] {InstanceId}: Closing time! Leaving (was at table).");
+                break;
+
+            case CustomerState.Wander:
+            case CustomerState.SeekingShelf:
+            case CustomerState.ExamineShelf:
+                if (_examineCoroutine != null) StopCoroutine(_examineCoroutine);
+                _targetShelf = null;
+                TransitionToState(CustomerState.ExitShop);
+                MoveToExit();
+                Debug.Log($"[CustomerFSM] {InstanceId}: Closing time! Leaving (was wandering/seeking).");
+                break;
+
+            case CustomerState.QueueAtCheckout:
+            case CustomerState.WaitingInLine:
+                Debug.Log($"[CustomerFSM] {InstanceId}: Closing time, but in transaction. Completing checkout first.");
+                break;
+
+            case CustomerState.ExitShop:
+                break;
+        }
+    }
+
+    // =========================================================================
     // SPEECH BUBBLE
     // =========================================================================
 

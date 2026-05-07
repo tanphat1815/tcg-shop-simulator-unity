@@ -198,6 +198,7 @@ public class ShopFloorManager : MonoBehaviour
 
     public float TotalMoney   => _totalMoney;
     public float DailyRevenue => _dailyRevenue;
+    public int CustomersServedToday => _customersServedToday;
 
     /// <summary>
     /// Set money trực tiếp (dùng cho rehydration).
@@ -214,5 +215,11 @@ public class ShopFloorManager : MonoBehaviour
         _dailyRevenue         = 0f;
         _customersServedToday = 0;
         _itemsSoldToday       = 0;
+    }
+
+    /// <summary>Xóa cashier queue khi bắt đầu ngày mới.</summary>
+    public void ClearCashierQueue()
+    {
+        _cashierQueue?.ClearQueue();
     }
 }

@@ -155,6 +155,9 @@ public class GameData
     // ========================================================================
     // TIME / PROGRESSION
     // ========================================================================
+    [Header("Time State")]
+    public int timeInMinutes = 480; // 8:00 AM (minutes from midnight)
+
     [Header("Progression")]
     public int currentDay = 1;
     public int expansionLevel = 0;
@@ -194,6 +197,13 @@ public class GameData
         {
             data.currentLevel = GameManager.Instance.CurrentLevel;
             data.currentExp = GameManager.Instance.CurrentExp;
+        }
+
+        // Time
+        if (TimeManager.Instance != null)
+        {
+            data.timeInMinutes = TimeManager.Instance.TimeInMinutes;
+            data.currentDay = TimeManager.Instance.CurrentDay;
         }
 
         // Inventory

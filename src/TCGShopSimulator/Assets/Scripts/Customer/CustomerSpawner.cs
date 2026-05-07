@@ -13,6 +13,12 @@ using UnityEngine;
 public class CustomerSpawner : MonoBehaviour
 {
     // =========================================================================
+    // SINGLETON
+    // =========================================================================
+
+    public static CustomerSpawner Instance { get; private set; }
+
+    // =========================================================================
     // CONFIGURATION
     // =========================================================================
 
@@ -48,6 +54,16 @@ public class CustomerSpawner : MonoBehaviour
     // =========================================================================
     // VÒNG ĐỜI
     // =========================================================================
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     private void Start()
     {

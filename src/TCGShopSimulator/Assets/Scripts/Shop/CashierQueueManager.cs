@@ -216,6 +216,18 @@ public class CashierQueueManager : MonoBehaviour
         Debug.Log("[CashierQueue] Cashier unregistered. Queue cleared.");
     }
 
+    /// <summary>
+    /// Xóa toàn bộ hàng chờ (gọi khi bắt đầu ngày mới).
+    /// </summary>
+    public void ClearQueue()
+    {
+        if (_queue.Count > 0)
+        {
+            Debug.Log($"[CashierQueue] Clearing queue of {_queue.Count} customers.");
+        }
+        _queue.Clear();
+    }
+
     public bool HasCashier => _hasCashier;
     public int  QueueSize  => _queue.Count;
 

@@ -158,6 +158,22 @@ public static class GameEconomyEvents
         OnGameDataLoaded?.Invoke(data);
     }
 
+    /// <summary>
+    /// Kích hoạt khi player mua expansion.
+    /// </summary>
+    public static event Action<int, float> OnExpansionBought;
+
+    public static void FireExpansionBought(int newLevel, float cost) =>
+        OnExpansionBought?.Invoke(newLevel, cost);
+
+    /// <summary>
+    /// Kích hoạt khi XP thay đổi.
+    /// </summary>
+    public static event Action<int, int> OnXpChanged;
+
+    public static void FireXpChanged(int currentExp, int requiredExp) =>
+        OnXpChanged?.Invoke(currentExp, requiredExp);
+
     // ========================================================================
     // MATCH / PLAY TABLE
     // ========================================================================

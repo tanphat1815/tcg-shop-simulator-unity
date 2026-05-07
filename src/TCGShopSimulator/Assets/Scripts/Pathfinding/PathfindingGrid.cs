@@ -80,6 +80,35 @@ public class PathfindingGrid : MonoBehaviour
     };
 
     // =========================================================================
+    // GRID DIMENSIONS (computed from dictionary bounds)
+    // =========================================================================
+
+    /// <summary>
+    /// Minimum cell coordinate from the dictionary keys.
+    /// </summary>
+    public Vector2Int MinCell => _minCell;
+
+    /// <summary>
+    /// Maximum cell coordinate from the dictionary keys.
+    /// </summary>
+    public Vector2Int MaxCell => _maxCell;
+
+    /// <summary>
+    /// Grid width in cells (derived from _minCell/_maxCell).
+    /// </summary>
+    public int GridWidth => _gridWidth;
+
+    /// <summary>
+    /// Grid height in cells (derived from _minCell/_maxCell).
+    /// </summary>
+    public int GridHeight => _gridHeight;
+
+    private Vector2Int _minCell;
+    private Vector2Int _maxCell;
+    private int _gridWidth;
+    private int _gridHeight;
+
+    // =========================================================================
     // EVENTS — Thông báo CharacterMovement khi grid thay đổi
     // =========================================================================
 
@@ -176,6 +205,119 @@ public class PathfindingGrid : MonoBehaviour
                 _pathNodes[coord] = new PathNode(coord, isWalkable);
             }
         }
+
+        UpdateGridBoundsFromDictionary();
+    }
+
+    /// <summary>
+    /// Recomputes _minCell, _maxCell, _gridWidth, _gridHeight from dictionary keys.
+    /// Call after any grid resize or full rebuild.
+    /// </summary>
+    private void UpdateGridBoundsFromDictionary()
+    {
+        if (_pathNodes.Count == 0)
+        {
+            _minCell = Vector2Int.zero;
+            _maxCell = Vector2Int.zero;
+            _gridWidth = 0;
+            _gridHeight = 0;
+            return;
+        }
+
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minY = int.MaxValue, maxY = int.MinValue;
+
+        foreach (var coord in _pathNodes.Keys)
+        {
+            if (coord.x < minX) minX = coord.x;
+            if (coord.x > maxX) maxX = coord.x;
+            if (coord.y < minY) minY = coord.y;
+            if (coord.y > maxY) maxY = coord.y;
+        }
+
+        _minCell = new Vector2Int(minX, minY);
+        _maxCell = new Vector2Int(maxX, maxY);
+        _gridWidth = _maxCell.x - _minCell.x + 1;
+        _gridHeight = _maxCell.y - _minCell.y + 1;
+    }
+
+    /// <summary>
+    /// Rebuild lại mảng PathNode với kích thước mới khi shop expand.
+    ///
+    /// THUẬT TOÁN:
+    ///   1. Tính newWidth, newHeight từ newBounds
+    ///   2. Copy existing nodes vào vị trí tương ứng
+    ///   3. Initialize new cells với walkability đúng
+    ///   4. Thay thế dictionary
+    ///   5. Fire OnGridChanged để CharacterMovement recalculate paths
+    /// </summary>
+    public void RebuildGrid(Vector2Int newMinCell, Vector2Int newMaxCell)
+    {
+        int newWidth  = newMaxCell.x - newMinCell.x + 1;
+        int newHeight = newMaxCell.y - newMinCell.y + 1;
+
+        if (newWidth <= 0 || newHeight <= 0)
+        {
+            Debug.LogError($"[PathfindingGrid] Invalid new bounds: min={newMinCell}, max={newMaxCell}");
+            return;
+        }
+
+        var newNodes = new Dictionary<Vector2Int, PathNode>();
+
+        int copiedCount = 0;
+
+        for (int x = newMinCell.x; x <= newMaxCell.x; x++)
+        {
+            for (int y = newMinCell.y; y <= newMaxCell.y; y++)
+            {
+                var worldCoord = new Vector2Int(x, y);
+
+                if (_pathNodes.TryGetValue(worldCoord, out PathNode existingNode))
+                {
+                    // Cell tồn tại trong mảng cũ → copy
+                    newNodes[worldCoord] = existingNode;
+                    copiedCount++;
+                }
+                else
+                {
+                    // Cell mới → initialize với walkability đúng
+                    newNodes[worldCoord] = InitializeNode(worldCoord);
+                }
+            }
+        }
+
+        // Thay thế dictionary
+        _pathNodes = newNodes;
+        UpdateGridBoundsFromDictionary();
+
+        Debug.Log($"[PathfindingGrid] Grid rebuilt: {_gridWidth}x{_gridHeight} cells. " +
+                  $"Copied {copiedCount} existing nodes, added {_pathNodes.Count - copiedCount} new cells.");
+
+        // Fire event để CharacterMovement recalculate paths
+        var allCells = new List<Vector2Int>(_pathNodes.Keys);
+        OnGridChanged?.Invoke(allCells);
+    }
+
+    /// <summary>
+    /// Khởi tạo một PathNode mới cho cell mới.
+    /// Kiểm tra GridSystem để xác định walkable hay không.
+    /// </summary>
+    private PathNode InitializeNode(Vector2Int worldCoord)
+    {
+        bool isWalkable = IsCellWalkable(worldCoord);
+        return new PathNode(worldCoord, isWalkable);
+    }
+
+    /// <summary>
+    /// Kiểm tra cell có thể đi được không.
+    /// Dựa trên GridSystem (trong bounds + không occupied).
+    /// </summary>
+    private bool IsCellWalkable(Vector2Int worldCoord)
+    {
+        if (GridSystem.Instance == null) return false;
+        if (!GridSystem.Instance.IsWithinShopBounds(worldCoord)) return false;
+        var node = GridSystem.Instance.GetNode(worldCoord);
+        return !node.IsOccupied;
     }
 
     // =========================================================================

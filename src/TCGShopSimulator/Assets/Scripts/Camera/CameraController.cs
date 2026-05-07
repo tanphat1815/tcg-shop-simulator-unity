@@ -75,6 +75,7 @@ public class CameraController : MonoBehaviour
     private float _targetOrthographicSize;
     private float _zoomVelocity;
     private float _lastPinchDistance;
+    private Vector3 _zOffset;
 
     // Input device references
     private Mouse _mouse;
@@ -103,6 +104,7 @@ public class CameraController : MonoBehaviour
         }
 
         _targetPosition = transform.position;
+        _zOffset = new Vector3(0, 0, transform.position.z);
         _targetOrthographicSize = _camera.orthographicSize;
         _targetOrthographicSize = Mathf.Clamp(_targetOrthographicSize, minZoom, maxZoom);
 
@@ -333,6 +335,76 @@ public class CameraController : MonoBehaviour
         float clampedSize = Mathf.Clamp(size, minZoom, maxZoom);
         _camera.orthographicSize = clampedSize;
         _targetOrthographicSize = clampedSize;
+    }
+
+    // =========================================================================
+    // SHOP EXPANSION — Smooth camera bounds update
+    // =========================================================================
+
+    /// <summary>
+    /// Cập nhật camera bounds khi shop expand.
+    /// Được gọi bởi ExpansionManager.BuyExpansion().
+    /// </summary>
+    public void UpdateShopBounds(Vector2Int newMinCell, Vector2Int newMaxCell)
+    {
+        if (GridSystem.Instance == null || GridSystem.Instance.IsometricGrid == null)
+        {
+            Debug.LogWarning("[CameraController] Cannot update bounds: missing GridSystem references.");
+            return;
+        }
+
+        Vector3 minWorld = GridSystem.Instance.CellToWorld(newMinCell);
+        Vector3 maxWorld = GridSystem.Instance.CellToWorld(newMaxCell);
+
+        float margin = 2f;
+        minWorld -= Vector3.one * margin;
+        maxWorld += Vector3.one * margin;
+
+        Vector3 center = (minWorld + maxWorld) / 2f;
+        Vector3 size = maxWorld - minWorld;
+
+        float cellSize = GridSystem.Instance.IsometricGrid.cellSize.y;
+        float orthoSize = size.y / 2f;
+
+        float aspect = Camera.main.aspect;
+        float requiredOrthoForWidth = size.x / (2f * aspect);
+        if (requiredOrthoForWidth > orthoSize)
+            orthoSize = requiredOrthoForWidth;
+
+        orthoSize = Mathf.Clamp(orthoSize, minZoom, maxZoom);
+
+        StopAllCoroutines();
+        StartCoroutine(SmoothTransitionCoroutine(orthoSize, center));
+
+        // Also update the world bounds so ClampPositionToBounds respects new area
+        worldBounds = new Bounds(center, size + Vector3.one * margin * 2f);
+
+        Debug.Log($"[CameraController] Shop expanded. New bounds: {newMinCell} → {newMaxCell}, " +
+                  $"OrthoSize: {orthoSize:F1}, Center: {center}");
+    }
+
+    private System.Collections.IEnumerator SmoothTransitionCoroutine(float targetOrtho, Vector3 targetCenter)
+    {
+        float duration = 0.5f;
+        float elapsed = 0f;
+
+        float startOrtho = Camera.main.orthographicSize;
+        Vector3 startPos = transform.position;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            float easeT = Mathf.SmoothStep(0f, 1f, t);
+
+            Camera.main.orthographicSize = Mathf.Lerp(startOrtho, targetOrtho, easeT);
+            transform.position = Vector3.Lerp(startPos, targetCenter + _zOffset, easeT);
+
+            yield return null;
+        }
+
+        Camera.main.orthographicSize = targetOrtho;
+        transform.position = targetCenter + _zOffset;
     }
 
     // =========================================================================

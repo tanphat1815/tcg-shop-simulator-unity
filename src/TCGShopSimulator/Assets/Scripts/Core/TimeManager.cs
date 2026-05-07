@@ -329,7 +329,10 @@ public class TimeManager : MonoBehaviour
 
     private float CalculateDailyRent(int expansionLevel)
     {
-        float baseRent     = 50f;
+        if (ExpansionManager.Instance != null)
+            return ExpansionManager.Instance.CalculateDailyRent();
+
+        float baseRent = 50f;
         float rentIncrease = 20f;
         return baseRent + (expansionLevel * rentIncrease);
     }

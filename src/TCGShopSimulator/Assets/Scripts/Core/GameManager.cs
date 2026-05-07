@@ -110,6 +110,8 @@ public class GameManager : MonoBehaviour
         _currentExp = newExp;
         _currentLevel = level;
 
+        GameEconomyEvents.FireXpChanged(_currentExp, xpRequired);
+
         Debug.Log($"[GameManager] +{amount} XP. Exp: {_currentExp}/{XpToNextLevel}, Level: {_currentLevel}");
     }
 

@@ -104,6 +104,8 @@ public class PackOpeningUI : MonoBehaviour
         }
         Instance = this;
 
+        SetupPanelResponsive();
+
         AutoSetup();
 
         if (_panelRoot != null)
@@ -246,9 +248,20 @@ public class PackOpeningUI : MonoBehaviour
         if (_panelRoot != null)
             _panelRoot.SetActive(true);
 
+        // Ensure screen dim overlay stretches to cover the entire screen
         if (_screenDimOverlay != null)
         {
             _screenDimOverlay.gameObject.SetActive(true);
+            RectTransform overlayRect = _screenDimOverlay.GetComponent<RectTransform>();
+            if (overlayRect != null)
+            {
+                // Stretch to full screen so dim covers everything
+                overlayRect.anchorMin = Vector2.zero;
+                overlayRect.anchorMax = Vector2.one;
+                overlayRect.offsetMin = Vector2.zero;
+                overlayRect.offsetMax = Vector2.zero;
+            }
+
             Color c = _screenDimOverlay.color;
             c.a = 0f;
             _screenDimOverlay.color = c;
@@ -591,4 +604,27 @@ public class PackOpeningUI : MonoBehaviour
 
     private static float EaseOutBack(float t) =>
         1f + 2.70158f * Mathf.Pow(t - 1f, 3f) + 1.70158f * Mathf.Pow(t - 1f, 2f);
+
+    // ─────────────────────────────────────────────────────────────────
+    // Responsive
+    // ─────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Configures the panel RectTransform for responsive behavior.
+    /// PackOpeningUI uses a fullscreen overlay, so it stretches to
+    /// fill the entire canvas regardless of resolution.
+    /// </summary>
+    private void SetupPanelResponsive()
+    {
+        if (_panelRect == null)
+            _panelRect = _panelRoot?.GetComponent<RectTransform>();
+
+        if (_panelRect == null) return;
+
+        // Fullscreen stretch: anchors fill the entire canvas
+        _panelRect.anchorMin = Vector2.zero;
+        _panelRect.anchorMax = Vector2.one;
+        _panelRect.pivot = new Vector2(0.5f, 0.5f);
+        _panelRect.offsetMin = Vector2.zero;
+        _panelRect.offsetMax = Vector2.zero;
+    }
 }

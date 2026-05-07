@@ -25,6 +25,10 @@ public class MoneyDisplay : MonoBehaviour
     [SerializeField] private GameObject _changePopupPrefab;
     [SerializeField] private RectTransform _popupAnchor;
 
+    [Header("Responsive Anchors")]
+    [Tooltip("Anchor panel to the top-right corner. Pivot = (1,1).")]
+    [SerializeField] private bool _anchorTopRight = true;
+
     [Header("Animation Settings")]
     [SerializeField] private float _countUpDuration = 0.5f;
     [SerializeField] private Color _positiveColor = new Color(0.2f, 0.9f, 0.4f);
@@ -50,6 +54,8 @@ public class MoneyDisplay : MonoBehaviour
     {
         if (_moneyText == null)
             _moneyText = GetComponentInChildren<TextMeshProUGUI>();
+
+        SetupResponsiveAnchors();
 
         if (ShopFloorManager.Instance != null)
         {
@@ -174,6 +180,28 @@ public class MoneyDisplay : MonoBehaviour
 
     private static float EaseOutCubic(float t) =>
         1f - Mathf.Pow(1f - t, 3f);
+
+    // ─────────────────────────────────────────────────────────────────
+    // Responsive Anchors
+    // ─────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Configures RectTransform anchors so the MoneyDisplay always stays
+    /// in the top-right corner regardless of screen resolution.
+    /// Anchor: (1,1) top-right | Pivot: (1,1) | No stretch.
+    /// </summary>
+    private void SetupResponsiveAnchors()
+    {
+        RectTransform rect = GetComponent<RectTransform>();
+        if (rect == null) return;
+
+        if (_anchorTopRight)
+        {
+            rect.anchorMin = new Vector2(1f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = Vector2.zero;
+        }
+    }
 }
 
 /// <summary>

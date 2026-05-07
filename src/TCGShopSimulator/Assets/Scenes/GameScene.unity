@@ -249,6 +249,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 65167725}
+  - component: {fileID: 65167726}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -284,6 +285,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &65167726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 65167724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &109494423
 GameObject:
   m_ObjectHideFlags: 0
@@ -515,6 +530,8 @@ GameObject:
   - component: {fileID: 130462488}
   - component: {fileID: 130462487}
   - component: {fileID: 130462486}
+  - component: {fileID: 999888001}
+  - component: {fileID: 999888002}
   m_Layer: 5
   m_Name: Canvas_Main
   m_TagString: Untagged
@@ -551,12 +568,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 1
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -618,6 +635,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 227569264}
+  - component: {fileID: 227569265}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -648,6 +666,20 @@ RectTransform:
   m_AnchoredPosition: {x: -0.0000076293945, y: 0}
   m_SizeDelta: {x: 216.13, y: 177.5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &227569265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227569263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &277056319
 GameObject:
   m_ObjectHideFlags: 0
@@ -1227,8 +1259,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -249.93317, y: 109.61992}
-  m_SizeDelta: {x: -499.8762, y: -219.2398}
+  m_AnchoredPosition: {x: -499.99774, y: 0}
+  m_SizeDelta: {x: -1000.0045, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &462673423
 MonoBehaviour:
@@ -3264,6 +3296,33 @@ Transform:
   - {fileID: 900000005}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &999888001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 130462485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f678901a2b3c4d5e6f7890, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _referenceResolution: {x: 1920, y: 1080}
+  _matchWidthOrHeight: 0.5
+  _showPhysicalSize: 0
+--- !u!114 &999888002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 130462485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1006558457
 GameObject:
   m_ObjectHideFlags: 0
@@ -3273,6 +3332,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1006558458}
+  - component: {fileID: 1006558459}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -3311,6 +3371,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1006558459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006558457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &1104774537
 GameObject:
   m_ObjectHideFlags: 0
@@ -4337,6 +4411,7 @@ GameObject:
   - component: {fileID: 1446082606}
   - component: {fileID: 1446082605}
   - component: {fileID: 1446082604}
+  - component: {fileID: 1446082607}
   m_Layer: 5
   m_Name: ShelfManagementPanel
   m_TagString: Untagged
@@ -4361,8 +4436,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 263.063, y: 123.45}
-  m_SizeDelta: {x: -526.1164, y: -246.9009}
+  m_AnchoredPosition: {x: -500.00003, y: 0}
+  m_SizeDelta: {x: -1000, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1446082604
 MonoBehaviour:
@@ -4384,7 +4459,7 @@ MonoBehaviour:
   _currentStockCountText: {fileID: 1104774539}
   _currentPriceText: {fileID: 353627439}
   _itemIconImage: {fileID: 0}
-  _priceInputField: {fileID: 0}
+  _priceInputField: {fileID: 1585162907}
   _btnSetMarketPrice: {fileID: 1147739310}
   _btnIncrease10: {fileID: 583078334}
   _btnDecrease10: {fileID: 1959132071}
@@ -4395,6 +4470,7 @@ MonoBehaviour:
   _openSound: {fileID: 0}
   _closeSound: {fileID: 0}
   _placeItemSound: {fileID: 0}
+  _applySafeAreaFitter: 1
 --- !u!114 &1446082605
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4433,6 +4509,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1446082602}
   m_CullTransparentMesh: 1
+--- !u!114 &1446082607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446082602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!1 &1492842207
 GameObject:
   m_ObjectHideFlags: 0
@@ -5097,8 +5187,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -249.94, y: -114.25}
-  m_SizeDelta: {x: -499.87, y: -228.5}
+  m_AnchoredPosition: {x: 500, y: 0}
+  m_SizeDelta: {x: -1000, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1652543636
 MonoBehaviour:
@@ -5112,12 +5202,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f396db7a0c894f0b8eec6dcdf8ea1543, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryPanelUI
-  _panelRoot: {fileID: 227569263}
+  _panelRoot: {fileID: 1652543634}
   _packListContent: {fileID: 284221979}
   _packEntryPrefab: {fileID: 1841352942343758407, guid: 3b4dcb319c17dec408f1c6fcddd73fd9, type: 3}
   _btnOpenSelectedPack: {fileID: 51162005}
   _selectedPackNameText: {fileID: 887431946}
   _selectedPackCountText: {fileID: 1507415760}
+  _useResponsiveLayout: 1
   _verboseLogging: 1
 --- !u!114 &1652543637
 MonoBehaviour:
@@ -5192,7 +5283,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 153}
+  m_AnchoredPosition: {x: 0.0048703, y: 467}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1683830756
@@ -5211,6 +5302,7 @@ MonoBehaviour:
   _coinIcon: {fileID: 0}
   _changePopupPrefab: {fileID: 0}
   _popupAnchor: {fileID: 0}
+  _anchorTopRight: 1
   _countUpDuration: 0.5
   _positiveColor: {r: 0.2, g: 0.9, b: 0.4, a: 1}
   _negativeColor: {r: 0.9, g: 0.3, b: 0.2, a: 1}
@@ -5262,14 +5354,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 44.75
+  m_fontSizeBase: 50
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0

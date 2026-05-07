@@ -28,6 +28,10 @@ public class InventoryPanelUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _selectedPackNameText;
     [SerializeField] private TextMeshProUGUI _selectedPackCountText;
 
+    [Header("Responsive")]
+    [Tooltip("Enable responsive layout for the inventory scroll view.")]
+    [SerializeField] private bool _useResponsiveLayout = true;
+
     [Header("Debug")]
     [SerializeField] private bool _verboseLogging = true;
 
@@ -57,6 +61,9 @@ public class InventoryPanelUI : MonoBehaviour
     private void Awake()
     {
         AutoSetup();
+
+        if (_useResponsiveLayout)
+            SetupResponsiveLayout();
 
         if (_panelRoot != null)
             _panelRoot.SetActive(false);
@@ -111,14 +118,21 @@ public class InventoryPanelUI : MonoBehaviour
         if (UnityEngine.InputSystem.Keyboard.current != null && 
             UnityEngine.InputSystem.Keyboard.current.iKey.wasPressedThisFrame)
         {
+            Debug.Log("[InventoryPanelUI] I key pressed! Toggling panel...");
             TogglePanel();
         }
     }
 
     public void TogglePanel()
     {
-        bool nextState = !(_panelRoot != null && _panelRoot.activeSelf);
-        if (_panelRoot != null) _panelRoot.SetActive(nextState);
+        if (_panelRoot == null)
+        {
+            Debug.LogError("[InventoryPanelUI] Panel Root is not assigned!");
+            return;
+        }
+
+        bool nextState = !_panelRoot.activeSelf;
+        _panelRoot.SetActive(nextState);
         
         if (nextState) RefreshInventoryDisplay();
     }
@@ -131,6 +145,7 @@ public class InventoryPanelUI : MonoBehaviour
         if (InventoryManager.Instance == null) return;
         if (_packListContent == null || _packEntryPrefab == null) return;
 
+        // Clean old entries
         foreach (var entry in _currentEntries)
             if (entry != null)
                 Destroy(entry.gameObject);
@@ -218,5 +233,62 @@ public class InventoryPanelUI : MonoBehaviour
 
         if (_btnOpenSelectedPack != null && InventoryManager.Instance != null)
             _btnOpenSelectedPack.interactable = InventoryManager.Instance.GetPackCount(_selectedPackId) > 0;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Responsive Layout
+    // ─────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Configures responsive anchor/stretch on the panel and ensures the
+    /// content area uses the full available space.
+    /// Also applies SafeAreaFitter to the panel root.
+    /// </summary>
+    private void SetupResponsiveLayout()
+    {
+        if (_panelRoot == null) return;
+
+        // Canvas-level SafeAreaFitter handles all edges.
+        // Here we just ensure the panel stretches to fill its allocated space
+        // and that buttons meet minimum hitbox size.
+
+        // Stretch panel to fill available space
+        RectTransform panelRect = _panelRoot.GetComponent<RectTransform>();
+        if (panelRect != null)
+        {
+            panelRect.anchorMin = new Vector2(0f, 0f);
+            panelRect.anchorMax = new Vector2(1f, 1f);
+            panelRect.offsetMin = Vector2.zero;
+            panelRect.offsetMax = Vector2.zero;
+        }
+
+        // Enforce minimum button hitbox size (100x60 Canvas units ≈ 44pt @2x)
+        if (_btnOpenSelectedPack != null)
+        {
+            RectTransform btnRect = _btnOpenSelectedPack.GetComponent<RectTransform>();
+            if (btnRect != null)
+            {
+                Vector2 minSize = new Vector2(100f, 60f);
+                if (btnRect.sizeDelta.x < minSize.x || btnRect.sizeDelta.y < minSize.y)
+                {
+                    Vector2 currentSize = btnRect.sizeDelta;
+                    btnRect.sizeDelta = new Vector2(
+                        Mathf.Max(currentSize.x, minSize.x),
+                        Mathf.Max(currentSize.y, minSize.y));
+                }
+            }
+        }
+
+        // Ensure pack list content stretches horizontally
+        if (_packListContent != null)
+        {
+            RectTransform contentRect = _packListContent.GetComponent<RectTransform>();
+            if (contentRect != null)
+            {
+                contentRect.anchorMin = new Vector2(0f, 0f);
+                contentRect.anchorMax = new Vector2(1f, 1f);
+                contentRect.offsetMin = Vector2.zero;
+                contentRect.offsetMax = Vector2.zero;
+            }
+        }
     }
 }

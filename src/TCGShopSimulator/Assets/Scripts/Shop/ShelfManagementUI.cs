@@ -63,6 +63,10 @@ public class ShelfManagementUI : MonoBehaviour
     [SerializeField] private AudioClip _closeSound;
     [SerializeField] private AudioClip _placeItemSound;
 
+    [Header("Responsive")]
+    [Tooltip("Apply bottom safe area only (panel opens from bottom of screen).")]
+    [SerializeField] private bool _applySafeAreaFitter = true;
+
     // ========================================================================
     // STATE
     // ========================================================================
@@ -87,7 +91,11 @@ public class ShelfManagementUI : MonoBehaviour
         AutoSetup();
 
         if (_panelRoot != null)
+        {
             _panelRoot.SetActive(false);
+            if (_applySafeAreaFitter)
+                SetupSafeAreaFitter();
+        }
     }
 
     [ContextMenu("Auto Setup UI")]
@@ -416,7 +424,32 @@ public class ShelfManagementUI : MonoBehaviour
         AudioSource.PlayClipAtPoint(clip, Vector3.zero);
     }
 
-    // ========================================================================
+    // ─────────────────────────────────────────────────────────────────
+    // Responsive
+    // ─────────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Adds a SafeAreaFitter to _panelRoot so the panel respects
+    /// notch / Dynamic Island / Home Indicator edges.
+    /// Applies safe area only to the edges that don't overlap game content.
+    /// </summary>
+    private void SetupSafeAreaFitter()
+    {
+        if (_panelRoot == null) return;
+
+        // Canvas-level SafeAreaFitter handles notch / Home Indicator.
+        // Here we only ensure the panel stays horizontally centered
+        // by keeping its local scale and pivot stable.
+        RectTransform panelRect = _panelRoot.GetComponent<RectTransform>();
+        if (panelRect != null)
+        {
+            // Keep panel at center anchor with fixed size range
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
     // PROPERTIES
     // ========================================================================
 

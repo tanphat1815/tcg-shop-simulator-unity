@@ -161,6 +161,40 @@ public class ShelfInventoryBridge : MonoBehaviour
     }
 
     // ========================================================================
+    // DELIVERY BRIDGE
+    // ========================================================================
+
+    /// <summary>
+    /// Đổ hàng từ carried item vào shelf.
+    /// Gọi bởi PlayerInventoryState.DepositToShelf().
+    /// Equivalent của fillTierFromItem() trong hệ thống cũ.
+    ///
+    /// LƯU Ý: Shelf phải là Selling shelf (IsSellingShelf = true).
+    /// Storage shelf xử lý riêng (DepositToStorage).
+    /// </summary>
+    public void FillShelfFromDelivery(ShelfInstance shelf, string itemId, int quantity)
+    {
+        if (shelf == null) return;
+
+        if (!shelf.IsSellingShelf)
+        {
+            Debug.LogWarning($"[ShelfInventoryBridge] Cannot fill non-selling shelf with delivery.");
+            return;
+        }
+
+        if (shelf.HasStock && shelf.DisplayedItemId != itemId)
+        {
+            Debug.LogWarning($"[ShelfInventoryBridge] Shelf already has different item " +
+                            $"('{shelf.DisplayedItemId}'). Overwriting with '{itemId}'.");
+        }
+
+        float marketPrice = GetMarketPrice(itemId);
+        shelf.SetStock(itemId, quantity, shelf.CurrentSellPrice, marketPrice);
+
+        Debug.Log($"[ShelfInventoryBridge] Filled shelf with {itemId} x{quantity} from delivery.");
+    }
+
+    // ========================================================================
     // UTILITY
     // ========================================================================
 

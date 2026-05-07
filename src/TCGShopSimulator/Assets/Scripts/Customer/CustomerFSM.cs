@@ -39,13 +39,16 @@ public class CustomerFSM : MonoBehaviour
 
     public enum CustomerState
     {
-        EnterShop,       // 'SPAWN' cũ — NPC vừa xuất hiện, chờ 0.5s
-        Wander,          // 'WANDER' cũ — Tìm kệ có hàng
-        SeekingShelf,    // 'SEEK_ITEM' cũ — Di chuyển đến kệ mục tiêu
-        ExamineShelf,    // 'INTERACT' cũ + MỚI — Đứng 2s, tính xác suất, bong bóng
-        QueueAtCheckout, // 'GO_CASHIER' cũ — Di chuyển đến slot cashier
-        WaitingInLine,   // 'WAITING' cũ — Chờ được phục vụ
-        ExitShop         // 'LEAVE' cũ — Đi ra cửa, tự hủy
+        EnterShop,        // 'SPAWN' cũ — NPC vừa xuất hiện, chờ 0.5s
+        Wander,           // 'WANDER' cũ — Tìm kệ có hàng
+        SeekingShelf,     // 'SEEK_ITEM' cũ — Di chuyển đến kệ mục tiêu
+        ExamineShelf,     // 'INTERACT' cũ + Economic Decision
+        QueueAtCheckout,  // 'GO_CASHIER' cũ — Di chuyển đến slot cashier
+        WaitingInLine,    // 'WAITING' cũ — Chờ được phục vụ
+        WantToPlay,       // ← MỚI: Intent=Play, đang tìm bàn
+        SeekingTable,     // ← MỚI: Di chuyển đến bàn
+        Playing,          // ← MỚI: Ngồi chơi 12 giây
+        ExitShop          // 'LEAVE' cũ — Đi ra cửa, tự hủy
     }
 
     public enum CustomerIntent { Buy, Play }
@@ -108,6 +111,10 @@ public class CustomerFSM : MonoBehaviour
     private float  _carriedItemPrice = 0f;
     private int    _queueSlotIndex  = -1;
 
+    // Play table state
+    private PlayTableInstance _assignedTable;
+    private int _assignedSeatIndex = -1;
+
     // =========================================================================
     // COROUTINES
     // =========================================================================
@@ -139,6 +146,13 @@ public class CustomerFSM : MonoBehaviour
         if (_queueSlotIndex >= 0 && ShopFloorManager.Instance?.CashierQueue != null)
         {
             ShopFloorManager.Instance.CashierQueue.DequeueCustomer(this);
+        }
+
+        // Cleanup table seat nếu đang ngồi
+        if (_assignedTable != null)
+        {
+            _assignedTable.FreeSeat(this);
+            _assignedTable = null;
         }
     }
 
@@ -176,6 +190,8 @@ public class CustomerFSM : MonoBehaviour
         _queueSlotIndex = -1;
         _carriedItemId = string.Empty;
         _carriedItemPrice = 0f;
+        _assignedTable = null;
+        _assignedSeatIndex = -1;
         TransitionToState(CustomerState.EnterShop);
     }
 
@@ -195,11 +211,15 @@ public class CustomerFSM : MonoBehaviour
                 HandleWander();
                 break;
 
+            case CustomerState.Playing:
+                HandlePlaying();
+                break;
+
             case CustomerState.WaitingInLine:
                 HandleWaitingInLine();
                 break;
 
-            // SeekingShelf, QueueAtCheckout, ExitShop:
+            // SeekingShelf, SeekingTable, QueueAtCheckout, ExitShop:
             // CharacterMovement đang di chuyển → đợi OnReachedGoal
         }
     }
@@ -225,6 +245,10 @@ public class CustomerFSM : MonoBehaviour
         if (Intent == CustomerIntent.Buy)
         {
             TryScanForShelf();
+        }
+        else if (Intent == CustomerIntent.Play)
+        {
+            TryFindPlayTable();
         }
     }
 
@@ -440,6 +464,113 @@ public class CustomerFSM : MonoBehaviour
     }
 
     // =========================================================================
+    // PLAY TABLE
+    // =========================================================================
+
+    private void TryFindPlayTable()
+    {
+        if (PlayTableManager.Instance == null) return;
+
+        var table = PlayTableManager.Instance.FindAvailableTable(transform.position);
+
+        if (table != null)
+        {
+            _assignedTable = table;
+
+            if (table.TryAssignSeat(this, out int seatIndex))
+            {
+                _assignedSeatIndex = seatIndex;
+                TransitionToState(CustomerState.SeekingTable);
+
+                Vector3 seatWorldPos = table.GetSeatWorldPosition(seatIndex);
+                Vector2Int seatCell = GridSystem.Instance.WorldToCell(seatWorldPos);
+                _movement.RequestPath(seatCell);
+
+                if (_verboseLogging)
+                    Debug.Log($"[CustomerFSM] {InstanceId}: Found table. Moving to seat {seatIndex}.");
+            }
+            else
+            {
+                Debug.Log($"[CustomerFSM] {InstanceId}: Cannot assign seat. Falling back to BUY.");
+                Intent = CustomerIntent.Buy;
+                TryScanForShelf();
+            }
+        }
+        else
+        {
+            // Không tìm được bàn → 20% chance rời đi, 80% tiếp tục wander
+            if (Random.value < 0.2f)
+            {
+                if (_verboseLogging)
+                    Debug.Log($"[CustomerFSM] {InstanceId}: No tables found. Leaving.");
+                TransitionToState(CustomerState.ExitShop);
+                MoveToExit();
+            }
+            else
+            {
+                MoveToRandomWanderPoint();
+            }
+        }
+    }
+
+    private void OnReachedTable()
+    {
+        if (_assignedTable == null)
+        {
+            TransitionToState(CustomerState.Wander);
+            MoveToRandomWanderPoint();
+            return;
+        }
+
+        // Dừng movement
+        _movement.StopMovement();
+        _movement.enabled = false;
+
+        // Xoay hướng nhìn về đối tác
+        Quaternion seatRotation = _assignedTable.GetSeatFacingRotation(_assignedSeatIndex);
+        transform.rotation = seatRotation;
+
+        TransitionToState(CustomerState.Playing);
+
+        if (_verboseLogging)
+            Debug.Log($"[CustomerFSM] {InstanceId}: Seated at table. Playing.");
+    }
+
+    private void HandlePlaying()
+    {
+        if (_assignedTable != null)
+        {
+            _assignedTable.UpdateVisuals();
+        }
+        // Đang chờ match kết thúc — OnMatchFinished() sẽ được gọi từ PlayTableInstance
+    }
+
+    /// <summary>
+    /// PlayTableInstance gọi khi match kết thúc.
+    /// </summary>
+    public void OnMatchFinished()
+    {
+        if (CurrentState != CustomerState.Playing) return;
+
+        if (_verboseLogging)
+            Debug.Log($"[CustomerFSM] {InstanceId}: Match finished. Leaving shop.");
+
+        // Re-enable movement
+        if (_movement != null)
+            _movement.enabled = true;
+
+        // Cleanup table seat
+        if (_assignedTable != null)
+        {
+            _assignedTable.FreeSeat(this);
+            _assignedTable = null;
+        }
+
+        TransitionToState(CustomerState.ExitShop);
+        MoveToExit();
+    }
+
+    // =========================================================================
     // SPEECH BUBBLE
     // =========================================================================
 
@@ -477,7 +608,17 @@ public class CustomerFSM : MonoBehaviour
                 TransitionToState(CustomerState.WaitingInLine);
                 break;
 
+            case CustomerState.SeekingTable:
+                OnReachedTable();
+                break;
+
             case CustomerState.ExitShop:
+                // Cleanup table seat nếu có
+                if (_assignedTable != null)
+                {
+                    _assignedTable.FreeSeat(this);
+                    _assignedTable = null;
+                }
                 Destroy(gameObject);
                 break;
         }

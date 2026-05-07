@@ -210,7 +210,7 @@ public class ShelfInstance : MonoBehaviour
     /// <summary>
     /// Unique entity ID cho shelf này. Dùng để track trong HashSet.
     /// </summary>
-    public int GetEntityId() => GetInstanceID();
+    public new int GetEntityId() => base.GetEntityId();
 
     /// <summary>
     /// Instance ID of the underlying PlacedFurnitureInstance.

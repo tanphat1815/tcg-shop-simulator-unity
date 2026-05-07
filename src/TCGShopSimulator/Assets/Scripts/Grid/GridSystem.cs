@@ -320,7 +320,7 @@ public class GridSystem : MonoBehaviour
     {
         var result = new System.Collections.Generic.List<GameData.PlacedShelfData>();
 
-        var instances = UnityEngine.Object.FindObjectsOfType<PlacedFurnitureInstance>();
+        var instances = UnityEngine.Object.FindObjectsByType<PlacedFurnitureInstance>(FindObjectsSortMode.None);
         foreach (var instance in instances)
         {
             if (instance == null || instance.Definition == null) continue;

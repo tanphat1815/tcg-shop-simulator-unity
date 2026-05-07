@@ -227,6 +227,30 @@ public class GameData
             data.shopMaxCellY = GridSystem.Instance.ShopMaxCell.y;
         }
 
+        // Play Tables
+        if (PlayTableManager.Instance != null)
+        {
+            data.placedTables.Clear();
+            var tables = UnityEngine.Object.FindObjectsByType<PlayTableInstance>(FindObjectsSortMode.None);
+            foreach (var table in tables)
+            {
+                var tableData = table.GetSerializableData();
+                data.placedTables.Add(new PlacedTableDataEntry
+                {
+                    instanceId = tableData.instanceId,
+                    furnitureTypeName = FurnitureType.PlayTable.ToString(),
+                    originCellX = 0,
+                    originCellY = 0,
+                    rotation = 0,
+                    seatCount = tableData.seatCount,
+                    occupantIds = tableData.occupantIds,
+                    isMatchActive = tableData.isMatchActive,
+                    matchStartedAt = tableData.matchStartedAt,
+                    matchDuration = tableData.matchDuration
+                });
+            }
+        }
+
         return data;
     }
 
@@ -249,5 +273,27 @@ public class GameData
     /// </summary>
     public override string ToString() =>
         $"GameData[version={saveVersion}|money=${playerMoney:F0}|" +
-        $"packs={packInventory.Count}|furniture={placedFurniture.Count}|saved={savedAtUtc}]";
+        $"packs={packInventory.Count}|furniture={placedFurniture.Count}|tables={placedTables.Count}|saved={savedAtUtc}]";
+
+    // ========================================================================
+    // PLAY TABLES
+    // ========================================================================
+
+    [Header("Placed Tables")]
+    public List<PlacedTableDataEntry> placedTables = new List<PlacedTableDataEntry>();
+
+    [Serializable]
+    public class PlacedTableDataEntry
+    {
+        public string instanceId;
+        public string furnitureTypeName;
+        public int originCellX;
+        public int originCellY;
+        public int rotation;
+        public int seatCount;
+        public List<string> occupantIds;
+        public bool isMatchActive;
+        public float matchStartedAt;
+        public float matchDuration;
+    }
 }

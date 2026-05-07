@@ -157,6 +157,20 @@ public static class GameEconomyEvents
     {
         OnGameDataLoaded?.Invoke(data);
     }
+
+    // ========================================================================
+    // MATCH / PLAY TABLE
+    // ========================================================================
+
+    /// <summary>
+    /// Kích hoạt khi một match tại bàn chơi kết thúc (sau 12 giây).
+    /// </summary>
+    public static event Action<int, string> OnMatchFinished;
+
+    public static void FireMatchFinished(int xpAmount, string source)
+    {
+        OnMatchFinished?.Invoke(xpAmount, source);
+    }
 }
 
 // ========================================================================

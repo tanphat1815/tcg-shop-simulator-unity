@@ -171,7 +171,7 @@ public class GameDataManager : MonoBehaviour
         if (verboseLogging) Debug.Log("[GameDataManager] Rehydration Step 4/5: Restore Shelf Stock");
         yield return null;
 
-        ShelfInstance[] allShelves = FindObjectsOfType<ShelfInstance>();
+        ShelfInstance[] allShelves = UnityEngine.Object.FindObjectsByType<ShelfInstance>(FindObjectsSortMode.None);
         foreach (var shelf in allShelves)
         {
             shelf.RestoreStockFromGameData(data);

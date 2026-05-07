@@ -156,7 +156,7 @@ public class CanvasSetup : MonoBehaviour
     [ContextMenu("Auto-Configure All Canvases")]
     private void AutoConfigureAllCanvases()
     {
-        Canvas[] allCanvases = FindObjectsOfType<Canvas>();
+        Canvas[] allCanvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
         int count = 0;
         foreach (var canvas in allCanvases)
         {

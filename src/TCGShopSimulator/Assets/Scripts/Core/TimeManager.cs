@@ -337,20 +337,3 @@ public class TimeManager : MonoBehaviour
         return baseRent + (expansionLevel * rentIncrease);
     }
 }
-
-/// <summary>
-/// Placeholder worker manager. Worker system is implemented in Step 13.
-/// Returns 0 salary until then.
-/// </summary>
-public class WorkerManager : MonoBehaviour
-{
-    public static WorkerManager Instance { get; private set; }
-
-    public float TotalDailySalary => 0f;
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-    }
-}

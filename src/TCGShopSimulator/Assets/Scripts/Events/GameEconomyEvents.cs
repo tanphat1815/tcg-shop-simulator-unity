@@ -175,6 +175,31 @@ public static class GameEconomyEvents
         OnXpChanged?.Invoke(currentExp, requiredExp);
 
     // ========================================================================
+    // WORKER / STAFF
+    // ========================================================================
+
+    /// <summary>Khi player thuê nhân viên.</summary>
+    public static event Action<string, string, float> OnWorkerHired;
+    //   param: instanceId, workerId, hiringFee
+
+    public static void FireWorkerHired(string instanceId, string workerId, float hiringFee) =>
+        OnWorkerHired?.Invoke(instanceId, workerId, hiringFee);
+
+    /// <summary>Khi player sa thải nhân viên.</summary>
+    public static event Action<string> OnWorkerFired;
+    //   param: instanceId
+
+    public static void FireWorkerFired(string instanceId) =>
+        OnWorkerFired?.Invoke(instanceId);
+
+    /// <summary>Khi customer được serve bởi worker (checkout hoàn tất).</summary>
+    public static event Action<string, string, float> OnCustomerServedByWorker;
+    //   param: customerInstanceId, workerInstanceId, price
+
+    public static void FireCustomerServedByWorker(string customerId, string workerId, float price) =>
+        OnCustomerServedByWorker?.Invoke(customerId, workerId, price);
+
+    // ========================================================================
     // MATCH / PLAY TABLE
     // ========================================================================
 

@@ -91,6 +91,9 @@ public class CustomerFSM : MonoBehaviour
     public CustomerIntent  Intent       { get; private set; } = CustomerIntent.Buy;
     public string          InstanceId   { get; private set; }
 
+    /// <summary>Giá của item đã mua (dùng bởi WorkerController khi fire OnCustomerServedByWorker).</summary>
+    public float CarriedItemPrice => _carriedItemPrice;
+
     // =========================================================================
     // AI VARIABLES
     // =========================================================================

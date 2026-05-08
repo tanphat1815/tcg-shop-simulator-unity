@@ -163,6 +163,27 @@ public class GameData
     public int expansionLevel = 0;
 
     // ========================================================================
+    // HIRED WORKERS
+    // ========================================================================
+    [Header("Hired Workers")]
+    public List<HiredWorkerEntry> hiredWorkers = new List<HiredWorkerEntry>();
+
+    [Serializable]
+    public class HiredWorkerEntry
+    {
+        public string instanceId;
+        public string workerId;  // matches WorkerDefinition.workerId
+
+        public HiredWorkerEntry() { }
+
+        public HiredWorkerEntry(string instanceId, string workerId)
+        {
+            this.instanceId = instanceId;
+            this.workerId = workerId;
+        }
+    }
+
+    // ========================================================================
     // STATS
     // ========================================================================
     [Header("Daily Stats")]
@@ -258,6 +279,17 @@ public class GameData
                     matchStartedAt = tableData.matchStartedAt,
                     matchDuration = tableData.matchDuration
                 });
+            }
+        }
+
+        // Hired Workers
+        if (WorkerManager.Instance != null)
+        {
+            data.hiredWorkers.Clear();
+            foreach (var worker in WorkerManager.Instance.HiredWorkers)
+            {
+                if (worker.Definition != null)
+                    data.hiredWorkers.Add(new HiredWorkerEntry(worker.InstanceId, worker.Definition.workerId));
             }
         }
 

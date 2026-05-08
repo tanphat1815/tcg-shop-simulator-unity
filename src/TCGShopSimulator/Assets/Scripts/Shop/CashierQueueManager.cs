@@ -1,5 +1,6 @@
 // Assets/Scripts/Shop/CashierQueueManager.cs
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -168,7 +169,7 @@ public class CashierQueueManager : MonoBehaviour
         if (!_hasCashier) return;
         if (Time.time - _lastCheckoutTime < _checkoutSpeed) return;
 
-        ServeNextCustomer();
+        ServeNextCustomerInternal();
         _lastCheckoutTime = Time.time;
     }
 
@@ -176,7 +177,7 @@ public class CashierQueueManager : MonoBehaviour
     /// Phục vụ NPC đầu hàng: cộng tiền, giải phóng NPC.
     /// TƯƠNG ĐƯƠNG HỆ THỐNG CŨ: serveCustomer() trong customerStore.ts
     /// </summary>
-    private void ServeNextCustomer()
+    private void ServeNextCustomerInternal()
     {
         if (_queue.Count == 0) return;
 
@@ -231,10 +232,50 @@ public class CashierQueueManager : MonoBehaviour
     public bool HasCashier => _hasCashier;
     public int  QueueSize  => _queue.Count;
 
+    /// <summary>Có customer nào đang đợi trong hàng không.</summary>
+    public bool HasCustomers => _queue.Count > 0;
+
+    /// <summary>Vị trí quầy cashier (điểm bắt đầu queue).</summary>
+    public Vector3 CashierDeskPosition => _cashierWorldPosition;
+
+    /// <summary>Peek customer tiếp theo trong queue (không dequeue).</summary>
+    public CustomerFSM PeekNextCustomer()
+    {
+        if (_queue.Count == 0) return null;
+        return _queue[0].Customer;
+    }
+
+    /// <summary>Serve customer tiếp theo (dequeue). Dùng bởi WorkerController.</summary>
+    public CustomerFSM ServeNextCustomer()
+    {
+        if (_queue.Count == 0) return null;
+
+        var entry = _queue[0];
+        _queue.RemoveAt(0);
+
+        for (int i = 0; i < _queue.Count; i++)
+        {
+            _queue[i].SlotIndex = i;
+            _queue[i].Customer.UpdateQueuePosition(GetSlotWorldPosition(i));
+        }
+
+        OnTransactionCompleted?.Invoke(entry.PaidPrice, entry.ItemId);
+        entry.Customer.OnServed();
+
+        if (_verboseLogging)
+        {
+            Debug.Log($"[CashierQueue] Served {entry.Customer.InstanceId}. " +
+                      $"Revenue: +${entry.PaidPrice:F2}. Queue remaining: {_queue.Count}.");
+        }
+
+        return entry.Customer;
+    }
+
     // =========================================================================
     // DATA CLASS
     // =========================================================================
 
+    [Serializable]
     private class QueueEntry
     {
         public CustomerFSM Customer;
